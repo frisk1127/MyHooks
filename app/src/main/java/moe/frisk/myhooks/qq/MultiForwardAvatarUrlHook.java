@@ -198,7 +198,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
             public boolean onLongClick(View v) {
                 String currentUrl = extractFromFaceUrl(msgRecord);
                 if (currentUrl == null || currentUrl.length() == 0) {
-                    AndroidUi.INSTANCE.toast(context, "未找到 fromFaceUrl");
+                    AndroidUi.toast(context, "未找到 fromFaceUrl");
                 } else {
                     previewAvatar(context, avatarContainer, currentUrl, msgRecord);
                 }
@@ -373,7 +373,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
                     MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null, null);
                     openImagePreview(context, avatarView, file, msgRecord);
                 } catch (Throwable e) {
-                    AndroidUi.INSTANCE.toast(context, "头像预览失败: " + e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage()));
+                    AndroidUi.toast(context, "头像预览失败: " + e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage()));
                     XposedBridge.log("[MyHooks/" + getKey() + "] " + android.util.Log.getStackTraceString(e));
                 }
             }
@@ -381,7 +381,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private void openImagePreview(final Context context, final View avatarView, final File file, final QqMsgRecord msgRecord) {
-        AndroidUi.INSTANCE.runOnMainThread(new Runnable() {
+        AndroidUi.runOnMainThread(new Runnable() {
             @Override
             public void run() {
                 Uri uri = buildPreviewUri(context, file);
@@ -398,7 +398,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
                     }
                     context.startActivity(fallback);
                 } catch (Throwable inner) {
-                    AndroidUi.INSTANCE.toast(context, "没有可用的图片预览器: " + String.valueOf(inner.getMessage()));
+                    AndroidUi.toast(context, "没有可用的图片预览器: " + String.valueOf(inner.getMessage()));
                     XposedBridge.log("[MyHooks/" + getKey() + "] " + android.util.Log.getStackTraceString(inner));
                 }
             }
