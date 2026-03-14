@@ -11,9 +11,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven(url = "https://api.xposed.info/")
+        maven { url 'https://api.xposed.info/' }
     }
 }
 
-rootProject.name = "MyHooks"
-include(":app")
+rootProject.name = 'MyHooks'
+include ':app'
