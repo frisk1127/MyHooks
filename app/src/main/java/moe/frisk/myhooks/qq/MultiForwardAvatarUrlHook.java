@@ -30,7 +30,14 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import moe.frisk.myhooks.AppHook;
+import moe.frisk.myhooks.dexkit.DexKitHost;
+import moe.frisk.myhooks.dexkit.DexKitMethodLocator;
 import moe.frisk.myhooks.util.AndroidUi;
+import org.luckypray.dexkit.DexKitBridge;
+import org.luckypray.dexkit.query.FindMethod;
+import org.luckypray.dexkit.query.matchers.MethodMatcher;
+import org.luckypray.dexkit.result.MethodData;
+import org.luckypray.dexkit.result.MethodDataList;
 
 public class MultiForwardAvatarUrlHook implements AppHook {
 
@@ -94,8 +101,63 @@ public class MultiForwardAvatarUrlHook implements AppHook {
         } catch (Throwable e) {
             return;
         }
-        hookAllCandidateMethods(componentClass);
+        if (!hookByDexKit(lpparam, componentClass)) {
+            hookAllCandidateMethods(componentClass);
+        }
         sHooked = true;
+    }
+
+    private boolean hookByDexKit(final XC_LoadPackage.LoadPackageParam lpparam, Class<?> componentClass) {
+        try {
+            Method method = DexKitHost.requireMethod(lpparam.classLoader, lpparam.packageName + ":" + getKey(),
+                new DexKitMethodLocator() {
+                    @Override
+                    public String getCacheKey() {
+                        return "avatar_set_listener";
+                    }
+
+                    @Override
+                    public MethodData find(DexKitBridge bridge) throws Exception {
+                        for (String candidate : AVATAR_COMPONENT_CLASSES) {
+                            MethodData data = findAvatarListenerMethod(bridge, candidate);
+                            if (data != null) {
+                                return data;
+                            }
+                        }
+                        return null;
+                    }
+                });
+            if (!componentClass.isAssignableFrom(method.getDeclaringClass())) {
+                return false;
+            }
+            XposedBridge.hookMethod(method, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    bindAvatarActions(param.thisObject);
+                }
+            });
+            return true;
+        } catch (Throwable e) {
+            XposedBridge.log("[MyHooks/" + getKey() + "] DexKit fallback: " + e.getClass().getSimpleName()
+                + ": " + String.valueOf(e.getMessage()));
+            return false;
+        }
+    }
+
+    private MethodData findAvatarListenerMethod(DexKitBridge bridge, String declaredClass) {
+        try {
+            MethodMatcher matcher = MethodMatcher.create()
+                .declaredClass(declaredClass)
+                .returnType("void")
+                .paramTypes()
+                .addInvoke("setOnClickListener");
+            MethodDataList result = bridge.findMethod(FindMethod.create().matcher(matcher));
+            if (result != null && !result.isEmpty()) {
+                return result.get(0);
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
     }
 
     private void hookAllCandidateMethods(Class<?> componentClass) {
