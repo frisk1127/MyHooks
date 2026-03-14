@@ -34,8 +34,33 @@ import moe.frisk.myhooks.util.AndroidUi;
 
 public class MultiForwardAvatarUrlHook implements AppHook {
 
-    private static final String AVATAR_COMPONENT_CLASS =
-        "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent";
+    private static final String[] AVATAR_COMPONENT_CLASSES = new String[]{
+        "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent",
+        "com.tencent.mobileqq.aio.msg.holder.component.avatar.AIOAvatarContentComponent"
+    };
+    private static final String[] GALLERY_ACTIVITY_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.QQGalleryActivity",
+        "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
+        "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity"
+    };
+    private static final String[] LAYER_INIT_BEAN_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.bean.RFWLayerInitBean"
+    };
+    private static final String[] LAYER_ITEM_MEDIA_INFO_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.bean.RFWLayerItemMediaInfo"
+    };
+    private static final String[] LAYER_PIC_INFO_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.bean.RFWLayerPicInfo"
+    };
+    private static final String[] PIC_INFO_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.bean.RFWLayerPicInfo$RFWPicInfo"
+    };
+    private static final String[] TRANS_ANIM_BEAN_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.anim.RFWTransAnimBean"
+    };
+    private static final String[] SOURCE_RECT_CLASSES = new String[]{
+        "com.tencent.richframework.gallery.anim.RFWTransAnimBean$SourceRect"
+    };
     private static final String MULTI_FORWARD_ACTIVITY =
         "com.tencent.mobileqq.activity.MultiForwardActivity";
     private static final Pattern FROM_FACE_URL =
@@ -65,7 +90,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
         }
         Class<?> componentClass;
         try {
-            componentClass = XposedHelpers.findClass(AVATAR_COMPONENT_CLASS, lpparam.classLoader);
+            componentClass = findFirstClass(lpparam.classLoader, AVATAR_COMPONENT_CLASSES);
         } catch (Throwable e) {
             return;
         }
@@ -201,7 +226,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
         Field[] fields = component.getClass().getDeclaredFields();
         for (Field field : fields) {
             try {
-                if (!"com.tencent.mobileqq.aio.msg.AIOMsgItem".equals(field.getType().getName())) {
+                if (!isLikelyAioMsgItem(field.getType())) {
                     continue;
                 }
                 field.setAccessible(true);
@@ -338,9 +363,10 @@ public class MultiForwardAvatarUrlHook implements AppHook {
         Object mediaInfo = createLayerItemMediaInfo(loader, layerPicInfo, file);
         Object initBean = createLayerInitBean(loader, mediaInfo, layerPicInfo, avatarView);
         Rect rect = getViewRectOnScreen(avatarView);
+        String galleryActivity = findFirstClassName(loader, GALLERY_ACTIVITY_CLASSES);
 
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(context.getPackageName(), "com.tencent.richframework.gallery.QQGalleryActivity"));
+        intent.setComponent(new ComponentName(context.getPackageName(), galleryActivity));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("KEY_THUMBNAL_BOUND", rect);
         intent.putExtra("PhotoConst.INIT_ACTIVITY_PACKAGE_NAME", context.getPackageName());
@@ -382,7 +408,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private Object createLayerInitBean(ClassLoader loader, Object mediaInfo, Object layerPicInfo, View avatarView) throws Exception {
-        Class<?> initClz = XposedHelpers.findClass("com.tencent.richframework.gallery.bean.RFWLayerInitBean", loader);
+        Class<?> initClz = findFirstClass(loader, LAYER_INIT_BEAN_CLASSES);
         Object bean = newInstanceBestEffort(initClz);
         setField(bean, "enterPos", 0);
         setField(bean, "mTransAnimBeanCreatorId", 0);
@@ -394,7 +420,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private Object createLayerItemMediaInfo(ClassLoader loader, Object layerPicInfo, File file) throws Exception {
-        Class<?> clz = XposedHelpers.findClass("com.tencent.richframework.gallery.bean.RFWLayerItemMediaInfo", loader);
+        Class<?> clz = findFirstClass(loader, LAYER_ITEM_MEDIA_INFO_CLASSES);
         Object bean = newInstanceBestEffort(clz);
         setField(bean, "_mediaId", file.getName() + "_0");
         setField(bean, "extraData", null);
@@ -405,7 +431,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private Object createLayerPicInfo(ClassLoader loader, Object picInfo) throws Exception {
-        Class<?> clz = XposedHelpers.findClass("com.tencent.richframework.gallery.bean.RFWLayerPicInfo", loader);
+        Class<?> clz = findFirstClass(loader, LAYER_PIC_INFO_CLASSES);
         Object bean = newInstanceBestEffort(clz);
         setField(bean, "_currentPicInfo", picInfo);
         setField(bean, "bigPicInfo", picInfo);
@@ -417,7 +443,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private Object createPicInfo(ClassLoader loader, File file) throws Exception {
-        Class<?> clz = XposedHelpers.findClass("com.tencent.richframework.gallery.bean.RFWLayerPicInfo$RFWPicInfo", loader);
+        Class<?> clz = findFirstClass(loader, PIC_INFO_CLASSES);
         Object bean = newInstanceBestEffort(clz);
         int[] size = readImageSize(file);
         setField(bean, "height", size[1]);
@@ -429,7 +455,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private Object createTransitionBean(ClassLoader loader, Object layerPicInfo, View avatarView) throws Exception {
-        Class<?> clz = XposedHelpers.findClass("com.tencent.richframework.gallery.anim.RFWTransAnimBean", loader);
+        Class<?> clz = findFirstClass(loader, TRANS_ANIM_BEAN_CLASSES);
         Object bean = newInstanceBestEffort(clz);
         Object sourceRect = createSourceRect(loader, getViewRectOnScreen(avatarView));
         setField(bean, "fadeCoverTimeMs", 0);
@@ -446,7 +472,7 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     private Object createSourceRect(ClassLoader loader, Rect rect) throws Exception {
-        Class<?> clz = XposedHelpers.findClass("com.tencent.richframework.gallery.anim.RFWTransAnimBean$SourceRect", loader);
+        Class<?> clz = findFirstClass(loader, SOURCE_RECT_CLASSES);
         try {
             return XposedHelpers.newInstance(clz, rect.left, rect.top, rect.right, rect.bottom);
         } catch (Throwable ignored) {
@@ -618,6 +644,34 @@ public class MultiForwardAvatarUrlHook implements AppHook {
             throw new IllegalStateException("empty file");
         }
         return file;
+    }
+
+    private boolean isLikelyAioMsgItem(Class<?> type) {
+        if (type == null) {
+            return false;
+        }
+        String name = type.getName();
+        return "com.tencent.mobileqq.aio.msg.AIOMsgItem".equals(name)
+            || name.endsWith(".AIOMsgItem")
+            || name.contains(".aio.msg.") && name.endsWith("MsgItem");
+    }
+
+    private Class<?> findFirstClass(ClassLoader loader, String[] candidates) throws ClassNotFoundException {
+        String className = findFirstClassName(loader, candidates);
+        return XposedHelpers.findClass(className, loader);
+    }
+
+    private String findFirstClassName(ClassLoader loader, String[] candidates) throws ClassNotFoundException {
+        Throwable lastError = null;
+        for (String candidate : candidates) {
+            try {
+                XposedHelpers.findClass(candidate, loader);
+                return candidate;
+            } catch (Throwable e) {
+                lastError = e;
+            }
+        }
+        throw new ClassNotFoundException("No matching class in candidates", lastError);
     }
 
     private static class QqMsgRecord {
