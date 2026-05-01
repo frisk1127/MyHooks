@@ -83,11 +83,21 @@ public class MultiForwardAvatarUrlHook implements AppHook {
     }
 
     @Override
-    public java.util.Set<String> getTargetPackages() {
-        java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
-        set.add("com.tencent.mobileqq");
-        set.add("com.tencent.tim");
-        return set;
+    public String getTitle() {
+        return "QQ 多选转发头像 URL 提取";
+    }
+
+    @Override
+    public String getDescription() {
+        return "在 QQ 多选转发界面长按头像，提取并显示头像的原始 URL。";
+    }
+
+    @Override
+    public String[] getTargetPackages() {
+        return new String[]{
+            "com.tencent.mobileqq",
+            "com.tencent.tim"
+        };
     }
 
     @Override
