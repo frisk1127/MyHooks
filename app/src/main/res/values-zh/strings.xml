@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="xposed_activated">Xposed 已激活</string>
+    <string name="xposed_unactivated">Xposed 未激活</string>
+    <string name="hook_list_title">Hook 列表</string>
+    <string name="hook_list_summary">每个已注册 Hook 都可以单独开关。修改后重启目标 App 生效。</string>
+    <string name="hook_enabled">已开启</string>
+    <string name="hook_disabled">已关闭</string>
+    <string name="hook_more_info">详情</string>
+    <string name="target_packages_label">目标包名</string>
+    <string name="hook_effect_note">切换开关后，需要重启目标 App 才会生效。</string>
+    <string name="hook_count_format">%1$d 个 Hook</string>
+    <string name="module_status_label">模块状态</string>
+</resources>

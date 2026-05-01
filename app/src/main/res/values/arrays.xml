@@ -2,6 +2,7 @@
 <resources>
 
     <string-array name="xposed_scope">
+        <item>moe.frisk.myhooks</item>
         <item>com.tencent.mobileqq</item>
         <item>com.tencent.tim</item>
         <item>tv.danmaku.bili</item>

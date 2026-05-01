@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyHooks</string>
+    <string name="xposed_activated">Xposed activated</string>
+    <string name="xposed_unactivated">Xposed not activated</string>
+    <string name="hook_list_title">Hooks</string>
+    <string name="hook_list_summary">Enable or disable each registered hook. Changes take effect after restarting the target app.</string>
+    <string name="hook_enabled">Enabled</string>
+    <string name="hook_disabled">Disabled</string>
+    <string name="hook_more_info">Details</string>
+    <string name="target_packages_label">Target packages</string>
+    <string name="hook_effect_note">Restart the target app after changing a switch.</string>
+    <string name="hook_count_format">%1$d hooks</string>
+    <string name="module_status_label">Module status</string>
+</resources>
