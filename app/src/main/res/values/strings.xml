@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyHooks</string>
-    <string name="xposed_activated">Xposed activated</string>
-    <string name="xposed_unactivated">Xposed not activated</string>
+    <string name="xposed_activated">Activated</string>
+    <string name="xposed_unactivated">Not activated</string>
     <string name="hook_list_title">Hooks</string>
     <string name="hook_list_summary">Enable or disable each registered hook. Changes take effect after restarting the target app.</string>
     <string name="hook_enabled">Enabled</string>

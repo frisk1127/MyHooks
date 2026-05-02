@@ -66,35 +66,23 @@ public class MainActivity extends Activity {
         // 4. Hook Group - Role: surface-container (Shape: Extra Large 28dp)
         root.addView(createHookListGroup());
 
-        root.addView(createFooter());
-
         return scrollView;
     }
 
     private View createLargeTopAppBar() {
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.VERTICAL);
-        header.setPadding(dp(12), dp(64), dp(12), dp(28));
+        header.setPadding(dp(12), dp(48), dp(12), dp(16));
 
         TextView title = new TextView(this);
         title.setText(R.string.app_name);
         // Token: md.sys.color.on-surface
         title.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurface));
         // Token: md.sys.typescale.headline-large (32sp)
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32);
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 36);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setLetterSpacing(-0.02f); // Emphasized feel
         header.addView(title);
-
-        TextView summary = new TextView(this);
-        summary.setText(R.string.hook_list_summary);
-        // Token: md.sys.color.on-surface-variant
-        summary.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
-        // Token: md.sys.typescale.body-medium (14sp)
-        summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        summary.setPadding(0, dp(16), 0, 0);
-        summary.setLineSpacing(0, 1.4f);
-        header.addView(summary);
 
         return header;
     }
@@ -104,8 +92,8 @@ public class MainActivity extends Activity {
         MaterialCardView card = new MaterialCardView(this);
         // Tokens: primary-container / error-container
         card.setCardBackgroundColor(themeColor(activated ? com.google.android.material.R.attr.colorPrimaryContainer : com.google.android.material.R.attr.colorErrorContainer));
-        // Token: md.sys.shape.corner.extra-large (28dp)
-        card.setRadius(dp(28));
+        // Smaller radius for LSPosed style
+        card.setRadius(dp(16));
         card.setCardElevation(0);
         card.setStrokeWidth(0);
 
@@ -117,32 +105,54 @@ public class MainActivity extends Activity {
         card.setLayoutParams(params);
 
         LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(28), dp(24), dp(28), dp(24));
+        content.setOrientation(LinearLayout.HORIZONTAL);
+        content.setGravity(Gravity.CENTER_VERTICAL);
+        content.setPadding(dp(20), dp(20), dp(20), dp(20));
         card.addView(content);
 
         // Tokens: on-primary-container / on-error-container
         int textColor = themeColor(activated ? com.google.android.material.R.attr.colorOnPrimaryContainer : com.google.android.material.R.attr.colorOnErrorContainer);
 
-        TextView label = new TextView(this);
-        label.setText(R.string.module_status_label);
-        label.setTextColor(textColor);
-        // Token: md.sys.typescale.label-large (14sp, emphasized)
-        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        label.setAlpha(0.7f);
-        label.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        label.setAllCaps(true);
-        label.setLetterSpacing(0.08f);
-        content.addView(label);
+        // Icon
+        TextView icon = new TextView(this);
+        icon.setText(activated ? "✔" : "✖");
+        icon.setTextColor(themeColor(activated ? com.google.android.material.R.attr.colorPrimaryContainer : com.google.android.material.R.attr.colorErrorContainer));
+        icon.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        icon.setGravity(Gravity.CENTER);
+        
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        bg.setColor(textColor);
+        icon.setBackground(bg);
+        
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(28), dp(28));
+        iconParams.setMarginEnd(dp(16));
+        content.addView(icon, iconParams);
+
+        // Text Column
+        LinearLayout textColumn = new LinearLayout(this);
+        textColumn.setOrientation(LinearLayout.VERTICAL);
+        content.addView(textColumn);
 
         TextView statusText = new TextView(this);
         statusText.setText(activated ? R.string.xposed_activated : R.string.xposed_unactivated);
         statusText.setTextColor(textColor);
-        // Token: md.sys.typescale.headline-medium (28sp)
-        statusText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        statusText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         statusText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        statusText.setPadding(0, dp(6), 0, 0);
-        content.addView(statusText);
+        textColumn.addView(statusText);
+
+        TextView versionText = new TextView(this);
+        String versionName = "Unknown";
+        try {
+            versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception ignored) {}
+        versionText.setText(versionName);
+        versionText.setTextColor(textColor);
+        versionText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        versionText.setAlpha(0.8f);
+        versionText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        versionText.setPadding(0, dp(2), 0, 0);
+        textColumn.addView(versionText);
 
         return card;
     }

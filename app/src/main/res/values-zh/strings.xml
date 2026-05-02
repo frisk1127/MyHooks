@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="xposed_activated">Xposed 已激活</string>
-    <string name="xposed_unactivated">Xposed 未激活</string>
+    <string name="xposed_activated">已激活</string>
+    <string name="xposed_unactivated">未激活</string>
     <string name="hook_list_title">Hook 列表</string>
     <string name="hook_list_summary">每个已注册 Hook 都可以单独开关。修改后重启目标 App 生效。</string>
     <string name="hook_enabled">已开启</string>
