@@ -3,6 +3,7 @@ package moe.frisk.myhooks;
 import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,7 +16,11 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.core.view.WindowCompat;
+
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.color.DynamicColors;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDivider;
 import com.google.android.material.materialswitch.MaterialSwitch;
@@ -28,6 +33,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        DynamicColors.applyToActivityIfAvailable(this);
         super.onCreate(savedInstanceState);
         applySystemBars();
         HookPreferences.ensurePrefsReadable(this);
@@ -38,7 +44,7 @@ public class MainActivity extends Activity {
         ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(true);
         // Token: md.sys.color.surface
-        scrollView.setBackgroundColor(color(R.color.md3_surface));
+        scrollView.setBackgroundColor(themeColor(com.google.android.material.R.attr.colorSurface));
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -73,7 +79,7 @@ public class MainActivity extends Activity {
         TextView title = new TextView(this);
         title.setText(R.string.app_name);
         // Token: md.sys.color.on-surface
-        title.setTextColor(color(R.color.md3_on_surface));
+        title.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurface));
         // Token: md.sys.typescale.headline-large (32sp)
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
@@ -83,7 +89,7 @@ public class MainActivity extends Activity {
         TextView summary = new TextView(this);
         summary.setText(R.string.hook_list_summary);
         // Token: md.sys.color.on-surface-variant
-        summary.setTextColor(color(R.color.md3_on_surface_variant));
+        summary.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
         // Token: md.sys.typescale.body-medium (14sp)
         summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         summary.setPadding(0, dp(16), 0, 0);
@@ -97,7 +103,7 @@ public class MainActivity extends Activity {
         final boolean activated = isModuleActivated();
         MaterialCardView card = new MaterialCardView(this);
         // Tokens: primary-container / error-container
-        card.setCardBackgroundColor(color(activated ? R.color.md3_primary_container : R.color.md3_error_container));
+        card.setCardBackgroundColor(themeColor(activated ? com.google.android.material.R.attr.colorPrimaryContainer : com.google.android.material.R.attr.colorErrorContainer));
         // Token: md.sys.shape.corner.extra-large (28dp)
         card.setRadius(dp(28));
         card.setCardElevation(0);
@@ -116,7 +122,7 @@ public class MainActivity extends Activity {
         card.addView(content);
 
         // Tokens: on-primary-container / on-error-container
-        int textColor = color(activated ? R.color.md3_on_primary_container : R.color.md3_on_error_container);
+        int textColor = themeColor(activated ? com.google.android.material.R.attr.colorOnPrimaryContainer : com.google.android.material.R.attr.colorOnErrorContainer);
 
         TextView label = new TextView(this);
         label.setText(R.string.module_status_label);
@@ -145,7 +151,7 @@ public class MainActivity extends Activity {
         TextView title = new TextView(this);
         title.setText(text);
         // Token: md.sys.color.primary
-        title.setTextColor(color(R.color.md3_primary));
+        title.setTextColor(themeColor(com.google.android.material.R.attr.colorPrimary));
         // Token: md.sys.typescale.label-large (14sp)
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
@@ -158,13 +164,13 @@ public class MainActivity extends Activity {
     private View createHookListGroup() {
         MaterialCardView group = new MaterialCardView(this);
         // Token: md.sys.color.surface-container
-        group.setCardBackgroundColor(color(R.color.md3_surface_container));
+        group.setCardBackgroundColor(themeColor(com.google.android.material.R.attr.colorSurfaceContainer));
         // Token: md.sys.shape.corner.extra-large (28dp)
         group.setRadius(dp(28));
         group.setCardElevation(0);
         group.setStrokeWidth(dp(1));
         // Token: md.sys.color.outline-variant
-        group.setStrokeColor(color(R.color.md3_outline_variant));
+        group.setStrokeColor(themeColor(com.google.android.material.R.attr.colorOutlineVariant));
 
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
@@ -175,7 +181,7 @@ public class MainActivity extends Activity {
             container.addView(createHookItem(hooks[i]));
             if (i < hooks.length - 1) {
                 MaterialDivider divider = new MaterialDivider(this);
-                divider.setDividerColor(color(R.color.md3_outline_variant));
+                divider.setDividerColor(themeColor(com.google.android.material.R.attr.colorOutlineVariant));
                 // Align with text inset
                 divider.setDividerInsetStart(dp(24));
                 divider.setDividerInsetEnd(dp(24));
@@ -205,7 +211,7 @@ public class MainActivity extends Activity {
 
         TextView title = new TextView(this);
         title.setText(hook.getTitle());
-        title.setTextColor(color(R.color.md3_on_surface));
+        title.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurface));
         // Token: md.sys.typescale.title-large (20sp) - Reduced for better multi-line
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
@@ -228,13 +234,12 @@ public class MainActivity extends Activity {
 
         TextView desc = new TextView(this);
         desc.setText(hook.getDescription());
-        desc.setTextColor(color(R.color.md3_on_surface_variant));
+        desc.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
         // Token: md.sys.typescale.body-medium (14sp)
         desc.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         desc.setPadding(0, dp(10), 0, 0);
         desc.setLineSpacing(0, 1.35f);
         item.addView(desc);
-
 
         item.setOnClickListener(v -> showHookInfo(hook));
 
@@ -272,7 +277,7 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             footer.setText("MyHooks");
         }
-        footer.setTextColor(color(R.color.md3_on_surface_variant));
+        footer.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
         // Token: md.sys.typescale.label-small (11sp)
         footer.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         footer.setAlpha(0.5f);
@@ -282,23 +287,13 @@ public class MainActivity extends Activity {
     }
 
     private void applySystemBars() {
+        // Use modern WindowCompat for edge-to-edge system bars configuration
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        
         if (Build.VERSION.SDK_INT >= 21) {
-            getWindow().setStatusBarColor(color(R.color.md3_surface));
-            getWindow().setNavigationBarColor(color(R.color.md3_surface));
-        }
-        if (Build.VERSION.SDK_INT >= 23) {
-            boolean isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) 
-                == Configuration.UI_MODE_NIGHT_YES;
-            View decorView = getWindow().getDecorView();
-            int flags = decorView.getSystemUiVisibility();
-            if (isDark) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            else flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            
-            if (Build.VERSION.SDK_INT >= 26) {
-                if (isDark) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                else flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            }
-            decorView.setSystemUiVisibility(flags);
+            // Set bars transparent to allow content to flow under or color matching
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            getWindow().setNavigationBarColor(Color.TRANSPARENT);
         }
     }
 
@@ -306,8 +301,8 @@ public class MainActivity extends Activity {
         return false;
     }
 
-    private int color(int resId) {
-        return getColor(resId);
+    private int themeColor(int attrResId) {
+        return MaterialColors.getColor(this, attrResId, 0);
     }
 
     private int dp(int value) {

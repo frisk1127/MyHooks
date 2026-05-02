@@ -1,6 +1,7 @@
 package moe.frisk.myhooks.systemui;
 
 import android.content.ContentResolver;
+import android.graphics.Canvas;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
@@ -59,6 +60,7 @@ public class HyperOsNavBarHook implements AppHook {
         hookSystemUiNavigationBarWindow(lpparam);
         hookNavigationBarLayoutInsets(lpparam);
         hookGestureLineViews(lpparam);
+        hookGestureLineViewMutators();
         hookRotationLogic(lpparam);
         hookNavigationRotationScopes(lpparam);
     }
@@ -199,6 +201,38 @@ public class HyperOsNavBarHook implements AppHook {
             log("NavigationBar insets strip hooks applied.");
         } catch (Throwable e) {
             log("NavigationBar insets hook failed: " + e.getMessage());
+        }
+    }
+
+    private void hookGestureLineViewMutators() {
+        try {
+            XposedHelpers.findAndHookMethod(View.class, "setVisibility", int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    if (isGestureLineView(param.thisObject)) {
+                        param.args[0] = Integer.valueOf(View.INVISIBLE);
+                    }
+                }
+            });
+            XposedHelpers.findAndHookMethod(View.class, "setAlpha", float.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    if (isGestureLineView(param.thisObject)) {
+                        param.args[0] = Float.valueOf(0f);
+                    }
+                }
+            });
+            XposedHelpers.findAndHookMethod(View.class, "draw", Canvas.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    if (isGestureLineView(param.thisObject)) {
+                        param.setResult(null);
+                    }
+                }
+            });
+            log("Gesture line persistent mutator hooks applied.");
+        } catch (Throwable e) {
+            log("Gesture line mutator hook failed: " + e.getMessage());
         }
     }
 
@@ -464,6 +498,28 @@ public class HyperOsNavBarHook implements AppHook {
             View view = (View) object;
             view.setAlpha(0f);
             view.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private boolean isGestureLineView(Object object) {
+        if (!(object instanceof View)) {
+            return false;
+        }
+        View view = (View) object;
+        String className = view.getClass().getName();
+        if (className.contains("NavigationHandle")
+            || className.contains("MiuiGestureLineView")
+            || className.contains("GestureLineView")) {
+            return true;
+        }
+        int id = view.getId();
+        if (id == View.NO_ID) {
+            return false;
+        }
+        try {
+            return "home_handle".equals(view.getResources().getResourceEntryName(id));
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 
