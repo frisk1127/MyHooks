@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MD3 Primary Colors (Dark) -->
+    <color name="md3_primary">#53DBC7</color>
+    <color name="md3_on_primary">#003731</color>
+    <color name="md3_primary_container">#005048</color>
+    <color name="md3_on_primary_container">#9EF2E3</color>
+
+    <!-- MD3 Secondary Colors (Dark) -->
+    <color name="md3_secondary">#B1CCC6</color>
+    <color name="md3_on_secondary">#1C3530</color>
+    <color name="md3_secondary_container">#334B47</color>
+    <color name="md3_on_secondary_container">#CCE8E1</color>
+
+    <!-- MD3 Tertiary Colors (Dark) -->
+    <color name="md3_tertiary">#ADCAE6</color>
+    <color name="md3_on_tertiary">#153349</color>
+    <color name="md3_tertiary_container">#2D495E</color>
+    <color name="md3_on_tertiary_container">#CCE5FF</color>
+
+    <!-- MD3 Neutral Colors (Dark) -->
+    <color name="md3_background">#191C1B</color>
+    <color name="md3_on_background">#E0E3E1</color>
+    <color name="md3_surface">#191C1B</color>
+    <color name="md3_on_surface">#E0E3E1</color>
+    <color name="md3_surface_variant">#3F4946</color>
+    <color name="md3_on_surface_variant">#BFC9C5</color>
+
+    <!-- MD3 Surface Containers (Dark) -->
+    <color name="md3_surface_container_lowest">#0C0F0E</color>
+    <color name="md3_surface_container_low">#1B1E1D</color>
+    <color name="md3_surface_container">#1F2322</color>
+    <color name="md3_surface_container_high">#292D2C</color>
+    <color name="md3_surface_container_highest">#343837</color>
+
+    <!-- MD3 Error Colors (Dark) -->
+    <color name="md3_error">#FFB4AB</color>
+    <color name="md3_on_error">#690005</color>
+    <color name="md3_error_container">#93000A</color>
+    <color name="md3_on_error_container">#FFDAD6</color>
+
+    <!-- MD3 Outlines (Dark) -->
+    <color name="md3_outline">#89938F</color>
+    <color name="md3_outline_variant">#3F4946</color>
+</resources>

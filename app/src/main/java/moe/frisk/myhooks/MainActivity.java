@@ -1,262 +1,249 @@
 package moe.frisk.myhooks;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Switch;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.divider.MaterialDivider;
+import com.google.android.material.materialswitch.MaterialSwitch;
 
-    private int colorBackground;
-    private int colorSurfaceContainer;
-    private int colorSurfaceContainerHigh;
-    private int colorOnSurface;
-    private int colorOnSurfaceVariant;
-    private int colorPrimary;
-    private int colorPrimaryContainer;
-    private int colorOnPrimaryContainer;
-    private int colorSecondaryContainer;
-    private int colorOnSecondaryContainer;
-    private int colorTertiaryContainer;
-    private int colorOnTertiaryContainer;
-    private int colorOutline;
+/**
+ * MainActivity designed strictly following Material Design 3 (MD3) Expressive specifications.
+ * Uses MD3 tokens for color, typography, and shape.
+ */
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        loadColors();
         applySystemBars();
         HookPreferences.ensurePrefsReadable(this);
         setContentView(createContentView());
     }
 
-    public static boolean isModuleActivated() {
-        return false;
-    }
-
     private View createContentView() {
         ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(true);
-        scrollView.setBackgroundColor(colorBackground);
+        // Token: md.sys.color.surface
+        scrollView.setBackgroundColor(color(R.color.md3_surface));
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(18), dp(20), dp(28));
+        root.setPadding(dp(16), 0, dp(16), dp(48));
         scrollView.addView(root, new ScrollView.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         ));
 
-        root.addView(createHeader());
-        root.addView(createStatusPanel());
-        root.addView(createHookSectionHeader());
+        // 1. Large Top App Bar - Role: Headline Large (32sp)
+        root.addView(createLargeTopAppBar());
 
-        LinearLayout list = new LinearLayout(this);
-        list.setOrientation(LinearLayout.VERTICAL);
-        root.addView(list, new LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
+        // 2. Status Widget - Role: primary-container / error-container
+        root.addView(createStatusHero());
 
-        for (int i = 0; i < HookRegistry.HOOKS.length; i++) {
-            list.addView(createHookCard(HookRegistry.HOOKS[i], i));
-        }
+        // 3. Section Header - Role: Label Large (Emphasized)
+        root.addView(createSectionHeader(getString(R.string.hook_list_title)));
+
+        // 4. Hook Group - Role: surface-container (Shape: Extra Large 28dp)
+        root.addView(createHookListGroup());
+
+        root.addView(createFooter());
+
         return scrollView;
     }
 
-    private View createHeader() {
+    private View createLargeTopAppBar() {
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.VERTICAL);
-        header.setPadding(0, dp(8), 0, dp(14));
+        header.setPadding(dp(12), dp(64), dp(12), dp(28));
 
         TextView title = new TextView(this);
         title.setText(R.string.app_name);
-        title.setTextColor(colorOnSurface);
+        // Token: md.sys.color.on-surface
+        title.setTextColor(color(R.color.md3_on_surface));
+        // Token: md.sys.typescale.headline-large (32sp)
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setIncludeFontPadding(false);
+        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        title.setLetterSpacing(-0.02f); // Emphasized feel
         header.addView(title);
 
         TextView summary = new TextView(this);
         summary.setText(R.string.hook_list_summary);
-        summary.setTextColor(colorOnSurfaceVariant);
+        // Token: md.sys.color.on-surface-variant
+        summary.setTextColor(color(R.color.md3_on_surface_variant));
+        // Token: md.sys.typescale.body-medium (14sp)
         summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        summary.setPadding(0, dp(10), 0, 0);
-        summary.setLineSpacing(0, 1.12f);
+        summary.setPadding(0, dp(16), 0, 0);
+        summary.setLineSpacing(0, 1.4f);
         header.addView(summary);
 
         return header;
     }
 
-    private View createStatusPanel() {
+    private View createStatusHero() {
         final boolean activated = isModuleActivated();
-        LinearLayout panel = new LinearLayout(this);
-        panel.setOrientation(LinearLayout.HORIZONTAL);
-        panel.setGravity(Gravity.CENTER_VERTICAL);
-        panel.setPadding(dp(18), dp(16), dp(18), dp(16));
-        panel.setBackground(roundRect(
-            activated ? colorPrimaryContainer : colorTertiaryContainer,
-            dp(24)
-        ));
+        MaterialCardView card = new MaterialCardView(this);
+        // Tokens: primary-container / error-container
+        card.setCardBackgroundColor(color(activated ? R.color.md3_primary_container : R.color.md3_error_container));
+        // Token: md.sys.shape.corner.extra-large (28dp)
+        card.setRadius(dp(28));
+        card.setCardElevation(0);
+        card.setStrokeWidth(0);
 
-        LinearLayout.LayoutParams panelParams = new LinearLayout.LayoutParams(
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         );
-        panelParams.setMargins(0, dp(8), 0, dp(18));
-        panel.setLayoutParams(panelParams);
+        params.setMargins(0, 0, 0, dp(32));
+        card.setLayoutParams(params);
 
-        TextView marker = new TextView(this);
-        marker.setGravity(Gravity.CENTER);
-        marker.setText(activated ? "ON" : "OFF");
-        marker.setTextColor(activated ? colorOnPrimaryContainer : colorOnTertiaryContainer);
-        marker.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        marker.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        marker.setBackground(roundRect(colorBackground, dp(18)));
-        LinearLayout.LayoutParams markerParams = new LinearLayout.LayoutParams(dp(56), dp(36));
-        markerParams.setMargins(0, 0, dp(14), 0);
-        panel.addView(marker, markerParams);
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(28), dp(24), dp(28), dp(24));
+        card.addView(content);
 
-        LinearLayout textColumn = new LinearLayout(this);
-        textColumn.setOrientation(LinearLayout.VERTICAL);
-        panel.addView(textColumn, new LinearLayout.LayoutParams(
-            0,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            1f
-        ));
+        // Tokens: on-primary-container / on-error-container
+        int textColor = color(activated ? R.color.md3_on_primary_container : R.color.md3_on_error_container);
 
         TextView label = new TextView(this);
         label.setText(R.string.module_status_label);
-        label.setTextColor(activated ? colorOnPrimaryContainer : colorOnTertiaryContainer);
-        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        label.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        textColumn.addView(label);
+        label.setTextColor(textColor);
+        // Token: md.sys.typescale.label-large (14sp, emphasized)
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        label.setAlpha(0.7f);
+        label.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        label.setAllCaps(true);
+        label.setLetterSpacing(0.08f);
+        content.addView(label);
 
-        TextView value = new TextView(this);
-        value.setText(activated ? R.string.xposed_activated : R.string.xposed_unactivated);
-        value.setTextColor(activated ? colorOnPrimaryContainer : colorOnTertiaryContainer);
-        value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        value.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        value.setPadding(0, dp(4), 0, 0);
-        textColumn.addView(value);
-
-        return panel;
-    }
-
-    private View createHookSectionHeader() {
-        LinearLayout row = new LinearLayout(this);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(0, 0, 0, dp(10));
-
-        TextView title = new TextView(this);
-        title.setText(R.string.hook_list_title);
-        title.setTextColor(colorOnSurface);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        row.addView(title, new LinearLayout.LayoutParams(
-            0,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            1f
-        ));
-
-        TextView count = new TextView(this);
-        count.setText(getString(R.string.hook_count_format, HookRegistry.HOOKS.length));
-        count.setTextColor(colorOnSecondaryContainer);
-        count.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        count.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        count.setPadding(dp(12), dp(7), dp(12), dp(7));
-        count.setBackground(roundRect(colorSecondaryContainer, dp(16)));
-        row.addView(count);
-
-        return row;
-    }
-
-    private View createHookCard(final AppHook hook, int index) {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(18), dp(16), dp(18), dp(16));
-        card.setBackground(roundRect(colorSurfaceContainer, dp(22)));
-
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        cardParams.setMargins(0, index == 0 ? 0 : dp(10), 0, 0);
-        card.setLayoutParams(cardParams);
-
-        LinearLayout top = new LinearLayout(this);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(Gravity.CENTER_VERTICAL);
-        card.addView(top);
-
-        TextView title = new TextView(this);
-        title.setText(hook.getTitle());
-        title.setTextColor(colorOnSurface);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setLineSpacing(0, 1.08f);
-        top.addView(title, new LinearLayout.LayoutParams(
-            0,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            1f
-        ));
-
-        final Switch toggle = new Switch(this);
-        toggle.setChecked(HookPreferences.isHookEnabled(this, hook));
-        toggle.setContentDescription(hook.getTitle());
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                HookPreferences.setHookEnabled(MainActivity.this, hook, isChecked);
-            }
-        });
-        top.addView(toggle);
-
-        TextView desc = new TextView(this);
-        desc.setText(hook.getDescription());
-        desc.setTextColor(colorOnSurfaceVariant);
-        desc.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        desc.setLineSpacing(0, 1.12f);
-        desc.setPadding(0, dp(10), 0, 0);
-        card.addView(desc);
-
-        TextView targets = new TextView(this);
-        targets.setText(buildTargetSummary(hook));
-        targets.setTextColor(colorOnSurfaceVariant);
-        targets.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        targets.setPadding(0, dp(12), 0, 0);
-        card.addView(targets);
-
-        TextView info = new TextView(this);
-        info.setText(R.string.hook_more_info);
-        info.setTextColor(colorPrimary);
-        info.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        info.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        info.setPadding(0, dp(12), 0, 0);
-        info.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showHookInfo(hook);
-            }
-        });
-        card.addView(info);
+        TextView statusText = new TextView(this);
+        statusText.setText(activated ? R.string.xposed_activated : R.string.xposed_unactivated);
+        statusText.setTextColor(textColor);
+        // Token: md.sys.typescale.headline-medium (28sp)
+        statusText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        statusText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        statusText.setPadding(0, dp(6), 0, 0);
+        content.addView(statusText);
 
         return card;
     }
 
+    private View createSectionHeader(String text) {
+        TextView title = new TextView(this);
+        title.setText(text);
+        // Token: md.sys.color.primary
+        title.setTextColor(color(R.color.md3_primary));
+        // Token: md.sys.typescale.label-large (14sp)
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        title.setPadding(dp(12), 0, dp(12), dp(16));
+        title.setAllCaps(true);
+        title.setLetterSpacing(0.15f);
+        return title;
+    }
+
+    private View createHookListGroup() {
+        MaterialCardView group = new MaterialCardView(this);
+        // Token: md.sys.color.surface-container
+        group.setCardBackgroundColor(color(R.color.md3_surface_container));
+        // Token: md.sys.shape.corner.extra-large (28dp)
+        group.setRadius(dp(28));
+        group.setCardElevation(0);
+        group.setStrokeWidth(dp(1));
+        // Token: md.sys.color.outline-variant
+        group.setStrokeColor(color(R.color.md3_outline_variant));
+
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        group.addView(container);
+
+        AppHook[] hooks = HookRegistry.HOOKS;
+        for (int i = 0; i < hooks.length; i++) {
+            container.addView(createHookItem(hooks[i]));
+            if (i < hooks.length - 1) {
+                MaterialDivider divider = new MaterialDivider(this);
+                divider.setDividerColor(color(R.color.md3_outline_variant));
+                // Align with text inset
+                divider.setDividerInsetStart(dp(24));
+                divider.setDividerInsetEnd(dp(24));
+                container.addView(divider);
+            }
+        }
+
+        return group;
+    }
+
+    private View createHookItem(final AppHook hook) {
+        LinearLayout item = new LinearLayout(this);
+        item.setOrientation(LinearLayout.VERTICAL);
+        item.setPadding(dp(24), dp(20), dp(24), dp(20));
+        item.setClickable(true);
+        item.setFocusable(true);
+        
+        // MD3 Ripple effect
+        TypedValue outValue = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        item.setBackgroundResource(outValue.resourceId);
+
+        LinearLayout top = new LinearLayout(this);
+        top.setOrientation(LinearLayout.HORIZONTAL);
+        top.setGravity(Gravity.CENTER_VERTICAL);
+        item.addView(top);
+
+        TextView title = new TextView(this);
+        title.setText(hook.getTitle());
+        title.setTextColor(color(R.color.md3_on_surface));
+        // Token: md.sys.typescale.title-large (20sp) - Reduced for better multi-line
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        title.setLineSpacing(0, 1.15f);
+        top.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        final MaterialSwitch toggle = new MaterialSwitch(this);
+        toggle.setChecked(HookPreferences.isHookEnabled(this, hook));
+        toggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            HookPreferences.setHookEnabled(MainActivity.this, hook, isChecked);
+        });
+        // Ensure switch has proper MD3 spacing
+        LinearLayout.LayoutParams toggleParams = new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        toggleParams.setMarginStart(dp(16));
+        toggleParams.gravity = Gravity.TOP; // Align to top when title wraps
+        top.addView(toggle, toggleParams);
+
+        TextView desc = new TextView(this);
+        desc.setText(hook.getDescription());
+        desc.setTextColor(color(R.color.md3_on_surface_variant));
+        // Token: md.sys.typescale.body-medium (14sp)
+        desc.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        desc.setPadding(0, dp(10), 0, 0);
+        desc.setLineSpacing(0, 1.35f);
+        item.addView(desc);
+
+
+        item.setOnClickListener(v -> showHookInfo(hook));
+
+        return item;
+    }
+
     private void showHookInfo(AppHook hook) {
-        new AlertDialog.Builder(this)
+        // MaterialAlertDialogBuilder strictly follows MD3 dialog tokens
+        new MaterialAlertDialogBuilder(this)
             .setTitle(hook.getTitle())
             .setMessage(buildHookInfoMessage(hook))
             .setPositiveButton(android.R.string.ok, null)
@@ -269,78 +256,58 @@ public class MainActivity extends Activity {
         sb.append(getString(R.string.target_packages_label)).append("\n");
         String[] targets = hook.getTargetPackages();
         if (targets != null) {
-            for (int i = 0; i < targets.length; i++) {
-                sb.append("- ").append(targets[i]).append('\n');
+            for (String target : targets) {
+                sb.append("• ").append(target).append("\n");
             }
         }
-        sb.append('\n').append(getString(R.string.hook_effect_note));
+        sb.append("\n").append(getString(R.string.hook_effect_note));
         return sb.toString();
     }
 
-    private String buildTargetSummary(AppHook hook) {
-        String[] targets = hook.getTargetPackages();
-        if (targets == null || targets.length == 0) {
-            return getString(R.string.target_packages_label) + ": -";
+    private View createFooter() {
+        TextView footer = new TextView(this);
+        try {
+            String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            footer.setText("Version " + versionName);
+        } catch (Exception e) {
+            footer.setText("MyHooks");
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append(getString(R.string.target_packages_label)).append(": ");
-        for (int i = 0; i < targets.length; i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(targets[i]);
-        }
-        return sb.toString();
-    }
-
-    private GradientDrawable roundRect(int color, int radius) {
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setShape(GradientDrawable.RECTANGLE);
-        drawable.setColor(color);
-        drawable.setCornerRadius(radius);
-        return drawable;
-    }
-
-    private void loadColors() {
-        colorBackground = color(R.color.md3_background);
-        colorSurfaceContainer = color(R.color.md3_surface_container);
-        colorSurfaceContainerHigh = color(R.color.md3_surface_container_high);
-        colorOnSurface = color(R.color.md3_on_surface);
-        colorOnSurfaceVariant = color(R.color.md3_on_surface_variant);
-        colorPrimary = color(R.color.md3_primary);
-        colorPrimaryContainer = color(R.color.md3_primary_container);
-        colorOnPrimaryContainer = color(R.color.md3_on_primary_container);
-        colorSecondaryContainer = color(R.color.md3_secondary_container);
-        colorOnSecondaryContainer = color(R.color.md3_on_secondary_container);
-        colorTertiaryContainer = color(R.color.md3_tertiary_container);
-        colorOnTertiaryContainer = color(R.color.md3_on_tertiary_container);
-        colorOutline = color(R.color.md3_outline);
-
-        if (colorSurfaceContainerHigh == colorOutline) {
-            colorSurfaceContainerHigh = colorSurfaceContainer;
-        }
+        footer.setTextColor(color(R.color.md3_on_surface_variant));
+        // Token: md.sys.typescale.label-small (11sp)
+        footer.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        footer.setAlpha(0.5f);
+        footer.setGravity(Gravity.CENTER);
+        footer.setPadding(0, dp(64), 0, dp(16));
+        return footer;
     }
 
     private void applySystemBars() {
         if (Build.VERSION.SDK_INT >= 21) {
-            getWindow().setStatusBarColor(colorBackground);
-            getWindow().setNavigationBarColor(colorBackground);
+            getWindow().setStatusBarColor(color(R.color.md3_surface));
+            getWindow().setNavigationBarColor(color(R.color.md3_surface));
         }
-        if (Build.VERSION.SDK_INT >= 26) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            );
-        } else if (Build.VERSION.SDK_INT >= 23) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (Build.VERSION.SDK_INT >= 23) {
+            boolean isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) 
+                == Configuration.UI_MODE_NIGHT_YES;
+            View decorView = getWindow().getDecorView();
+            int flags = decorView.getSystemUiVisibility();
+            if (isDark) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            else flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            
+            if (Build.VERSION.SDK_INT >= 26) {
+                if (isDark) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                else flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            }
+            decorView.setSystemUiVisibility(flags);
         }
     }
 
+    public static boolean isModuleActivated() {
+        return false;
+    }
+
     private int color(int resId) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            return getColor(resId);
-        }
-        return getResources().getColor(resId);
+        return getColor(resId);
     }
 
     private int dp(int value) {

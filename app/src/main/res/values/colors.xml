@@ -1,18 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="md3_background">#FFFBFE</color>
-    <color name="md3_surface">#FFFBFE</color>
-    <color name="md3_surface_container">#F1EDEC</color>
-    <color name="md3_surface_container_high">#EAE6E4</color>
-    <color name="md3_on_surface">#1D1B20</color>
-    <color name="md3_on_surface_variant">#49454F</color>
+    <!-- MD3 Primary Colors -->
     <color name="md3_primary">#006A60</color>
     <color name="md3_on_primary">#FFFFFF</color>
     <color name="md3_primary_container">#9EF2E3</color>
     <color name="md3_on_primary_container">#00201C</color>
-    <color name="md3_secondary_container">#FFE08A</color>
-    <color name="md3_on_secondary_container">#261900</color>
-    <color name="md3_tertiary_container">#FFD8E4</color>
-    <color name="md3_on_tertiary_container">#31111D</color>
-    <color name="md3_outline">#79747E</color>
+
+    <!-- MD3 Secondary Colors -->
+    <color name="md3_secondary">#4A635F</color>
+    <color name="md3_on_secondary">#FFFFFF</color>
+    <color name="md3_secondary_container">#CCE8E3</color>
+    <color name="md3_on_secondary_container">#05201C</color>
+
+    <!-- MD3 Tertiary Colors -->
+    <color name="md3_tertiary">#456179</color>
+    <color name="md3_on_tertiary">#FFFFFF</color>
+    <color name="md3_tertiary_container">#CCE5FF</color>
+    <color name="md3_on_tertiary_container">#001E31</color>
+
+    <!-- MD3 Neutral Colors -->
+    <color name="md3_background">#F8FDFA</color>
+    <color name="md3_on_background">#191C1B</color>
+    <color name="md3_surface">#F8FDFA</color>
+    <color name="md3_on_surface">#191C1B</color>
+    <color name="md3_surface_variant">#DAE5E1</color>
+    <color name="md3_on_surface_variant">#3F4946</color>
+
+    <!-- MD3 Surface Containers -->
+    <color name="md3_surface_container_lowest">#FFFFFF</color>
+    <color name="md3_surface_container_low">#F0F5F2</color>
+    <color name="md3_surface_container">#EAEFEC</color>
+    <color name="md3_surface_container_high">#E4E9E6</color>
+    <color name="md3_surface_container_highest">#DEE4E1</color>
+
+    <!-- MD3 Error Colors -->
+    <color name="md3_error">#BA1A1A</color>
+    <color name="md3_on_error">#FFFFFF</color>
+    <color name="md3_error_container">#FFDAD6</color>
+    <color name="md3_on_error_container">#410002</color>
+
+    <!-- MD3 Outlines -->
+    <color name="md3_outline">#6F7976</color>
+    <color name="md3_outline_variant">#BFC9C5</color>
 </resources>
