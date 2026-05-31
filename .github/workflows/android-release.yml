@@ -1,4 +1,4 @@
-name: Android
+name: Android Release
 
 on:
   push:
@@ -6,12 +6,11 @@ on:
       - main
       - master
       - dev
-  pull_request:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build debug APK
+    name: Build release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -36,11 +35,11 @@ jobs:
           gradle-version: 8.9
 
       - name: Build
-        run: gradle --no-daemon assembleDebug
+        run: gradle --no-daemon assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: MyHooks-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: MyHooks-release
+          path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
