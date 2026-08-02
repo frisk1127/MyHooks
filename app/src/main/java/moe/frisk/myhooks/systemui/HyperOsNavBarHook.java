@@ -7,8 +7,10 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -25,6 +27,7 @@ public class HyperOsNavBarHook implements AppHook {
     private static final String LOG_TAG = "MyHooksHyperOS";
     private static final ThreadLocal<Integer> ROTATION_SCOPE_DEPTH = new ThreadLocal<Integer>();
     private static final ThreadLocal<Object> CREATE_NAV_BAR_RESTORE_TARGET = new ThreadLocal<Object>();
+    private boolean insetProviderStateLogged;
 
     @Override
     public String getKey() {
@@ -446,7 +449,7 @@ public class HyperOsNavBarHook implements AppHook {
             params.setFitInsetsTypes(0);
             params.setFitInsetsSides(0);
             params.setFitInsetsIgnoringVisibility(false);
-            clearObjectField(params, "providedInsets");
+            removeNavigationBarInsetProvider(params);
             Object paramsForRotation = XposedHelpers.getObjectField(params, "paramsForRotation");
             if (paramsForRotation instanceof WindowManager.LayoutParams[]) {
                 WindowManager.LayoutParams[] rotationArray = (WindowManager.LayoutParams[]) paramsForRotation;
@@ -456,11 +459,74 @@ public class HyperOsNavBarHook implements AppHook {
                         rotationParams.setFitInsetsTypes(0);
                         rotationParams.setFitInsetsSides(0);
                         rotationParams.setFitInsetsIgnoringVisibility(false);
-                        clearObjectField(rotationParams, "providedInsets");
+                        removeNavigationBarInsetProvider(rotationParams);
                     }
                 }
             }
         } catch (Throwable ignored) {}
+    }
+
+    private void removeNavigationBarInsetProvider(WindowManager.LayoutParams params) {
+        try {
+            Field field = findField(params.getClass(), "providedInsets");
+            field.setAccessible(true);
+            Object providers = field.get(params);
+            if (providers == null || !providers.getClass().isArray()) {
+                return;
+            }
+
+            int providerCount = Array.getLength(providers);
+            int navigationBarsType = WindowInsets.Type.navigationBars();
+            int removedCount = 0;
+            for (int i = 0; i < providerCount; i++) {
+                if (getInsetProviderType(Array.get(providers, i)) == navigationBarsType) {
+                    removedCount++;
+                }
+            }
+            if (removedCount == 0) {
+                return;
+            }
+
+            Object filteredProviders = Array.newInstance(
+                providers.getClass().getComponentType(),
+                providerCount - removedCount
+            );
+            int targetIndex = 0;
+            for (int i = 0; i < providerCount; i++) {
+                Object provider = Array.get(providers, i);
+                if (getInsetProviderType(provider) != navigationBarsType) {
+                    Array.set(filteredProviders, targetIndex++, provider);
+                }
+            }
+            field.set(params, filteredProviders);
+
+            if (!insetProviderStateLogged) {
+                insetProviderStateLogged = true;
+                log("Removed navigationBars inset provider; preserved "
+                    + (providerCount - removedCount) + " gesture-related providers.");
+            }
+        } catch (Throwable e) {
+            log("NavigationBar inset provider filtering failed: " + e.getMessage());
+        }
+    }
+
+    private int getInsetProviderType(Object provider) {
+        if (provider == null) {
+            return -1;
+        }
+        try {
+            Object type = XposedHelpers.callMethod(provider, "getType");
+            if (type instanceof Integer) {
+                return ((Integer) type).intValue();
+            }
+        } catch (Throwable ignored) {}
+        try {
+            Field field = findField(provider.getClass(), "mType");
+            field.setAccessible(true);
+            return field.getInt(provider);
+        } catch (Throwable ignored) {
+            return -1;
+        }
     }
 
     private boolean isNavigationBarWindow(WindowManager.LayoutParams params) {
@@ -468,14 +534,6 @@ public class HyperOsNavBarHook implements AppHook {
         return title != null
             && "NavigationBar0".contentEquals(title)
             && params.type == TYPE_NAVIGATION_BAR;
-    }
-
-    private void clearObjectField(Object object, String fieldName) {
-        try {
-            Field field = findField(object.getClass(), fieldName);
-            field.setAccessible(true);
-            field.set(object, null);
-        } catch (Throwable ignored) {}
     }
 
     private void hideHomeHandle(Object navigationBar) {

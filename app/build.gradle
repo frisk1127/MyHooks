@@ -2,6 +2,49 @@ plugins {
     id 'com.android.application'
 }
 
+def versionMajor = 0
+def versionMinor = 2
+def versionPatch = 0
+def appVersionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+
+def resolveGitCommitHash = {
+    String commitHash = System.getenv('GITHUB_SHA')
+    if (commitHash) {
+        return commitHash.take(8)
+    }
+
+    try {
+        def output = providers.exec {
+            workingDir rootDir
+            commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
+            ignoreExitValue = true
+        }.standardOutput.asText.get().trim()
+        if (output) {
+            return output
+        }
+    } catch (Exception ignored) {
+    }
+
+    try {
+        File gitDir = new File(rootDir, '.git')
+        File headFile = new File(gitDir, 'HEAD')
+        String head = headFile.text.trim()
+        if (!head.startsWith('ref: ')) {
+            return head.take(8)
+        }
+        File refFile = new File(gitDir, head.substring(5))
+        if (refFile.isFile()) {
+            return refFile.text.trim().take(8)
+        }
+    } catch (Exception ignored) {
+    }
+
+    return 'unknown'
+}
+
+def gitCommitHash = resolveGitCommitHash()
+def appVersionName = "${versionMajor}.${versionMinor}.${versionPatch}+${gitCommitHash}"
+
 android {
     namespace 'moe.frisk.myhooks'
     compileSdk 35
@@ -10,8 +53,8 @@ android {
         applicationId 'moe.frisk.myhooks'
         minSdk 24
         targetSdk 35
-        versionCode 1
-        versionName '0.1.0'
+        versionCode appVersionCode
+        versionName appVersionName
     }
 
     buildTypes {
