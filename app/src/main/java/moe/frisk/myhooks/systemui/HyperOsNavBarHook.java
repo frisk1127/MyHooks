@@ -36,12 +36,12 @@ public class HyperOsNavBarHook implements AppHook {
 
     @Override
     public String getTitle() {
-        return "HyperOS 隐藏手势线保留旋转建议";
+        return "HyperOS 隐藏手势线保留手势与旋转建议";
     }
 
     @Override
     public String getDescription() {
-        return "在开启系统原生“隐藏手势提示线”时，让旋转建议按钮依然能够正常弹出。";
+        return "隐藏底部手势提示线并保留旋转建议。HyperOS 4 请关闭系统自带的隐藏开关，以保留左右滑动切换应用；旧版系统仍需开启该开关。";
     }
 
     @Override
@@ -52,6 +52,13 @@ public class HyperOsNavBarHook implements AppHook {
     @Override
     public void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         if (!SYSTEMUI_PACKAGE.equals(lpparam.packageName)) {
+            return;
+        }
+
+        if (XposedHelpers.findClassIfExists(
+            "com.android.systemui.navigationbar.views.NavigationBar", lpparam.classLoader
+        ) != null) {
+            new HyperOs4NavBarHook().install(lpparam.classLoader);
             return;
         }
 
