@@ -8,6 +8,7 @@
         <item>tv.danmaku.bili</item>
         <item>com.android.systemui</item>
         <item>com.miui.securitycenter</item>
+        <item>com.microsoft.rdc.androidx</item>
     </string-array>
 
 </resources>
