@@ -142,7 +142,9 @@ public class MainActivity extends Activity {
         row.addView(toggle, WRAP, WRAP);
         row.setOnClickListener(v -> new MaterialAlertDialogBuilder(this).setTitle(hook.getTitle())
             .setMessage(hook.getDescription() + "\n\n" + getString(R.string.target_packages_label)
-                + "\n" + TextUtils.join("\n", hook.getTargetPackages()) + "\n\n" + getString(R.string.hook_effect_note))
+                + "\n" + TextUtils.join("\n", hook.getTargetPackages()) + "\n\n"
+                + getString(hook.targetsSystemFramework()
+                    ? R.string.hook_reboot_note : R.string.hook_effect_note))
             .setPositiveButton(android.R.string.ok, null).show());
         return row;
     }

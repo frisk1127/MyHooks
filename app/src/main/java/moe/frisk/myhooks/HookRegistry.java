@@ -1,6 +1,7 @@
 package moe.frisk.myhooks;
 
 import moe.frisk.myhooks.bili.AutoClickViewOriginalImageHook;
+import moe.frisk.myhooks.framework.StockEmojiHook;
 import moe.frisk.myhooks.qq.MultiForwardAvatarUrlHook;
 import moe.frisk.myhooks.rdp.RdpSessionControlsHook;
 import moe.frisk.myhooks.securitycenter.AutoFastChargeHook;
@@ -16,6 +17,7 @@ public final class HookRegistry {
         new AutoClickViewOriginalImageHook(),
         new HyperOsNavBarHook(),
         new AutoFastChargeHook(),
+        new StockEmojiHook(),
         new RdpSessionControlsHook()
     };
 }

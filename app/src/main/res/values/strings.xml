@@ -10,6 +10,7 @@
     <string name="hook_more_info">Details</string>
     <string name="target_packages_label">Target packages</string>
     <string name="hook_effect_note">Restart the target app after changing a switch.</string>
+    <string name="hook_reboot_note">Select System Framework in LSPosed and reboot after changing this switch.</string>
     <string name="hook_count_format">%1$d hooks</string>
     <string name="module_status_label">Module status</string>
     <string name="group_system">System</string>

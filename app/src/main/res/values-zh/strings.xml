@@ -9,6 +9,7 @@
     <string name="hook_more_info">详情</string>
     <string name="target_packages_label">目标包名</string>
     <string name="hook_effect_note">切换开关后，需要重启目标 App 才会生效。</string>
+    <string name="hook_reboot_note">请在 LSPosed 中勾选「系统框架」，切换开关后重启设备生效。</string>
     <string name="hook_count_format">%1$d 个 Hook</string>
     <string name="module_status_label">模块状态</string>
     <string name="group_system">系统</string>

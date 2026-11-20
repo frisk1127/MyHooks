@@ -29,8 +29,10 @@ adb("shell", "wm", "size", "1080x2400")
 adb("shell", "wm", "density", "320")
 adb("shell", "am", "start", "-W", "-n", "moe.frisk.myhooks/.MainActivity")
 root = screen()
-for label in ("MyHooks", "System", "2", "Apps", "3"):
-    assert find_text(root, label) is not None, (label, ET.tostring(root, encoding="unicode"))
+assert find_text(root, "MyHooks") is not None
+for label in ("System", "Apps"):
+    assert any([child.get("text") for child in node] == [label, "3"]
+               for node in root.iter("node")), (label, ET.tostring(root, encoding="unicode"))
 def rdp_switch(root):
     return next((n for n in root.iter("node") if n.get("checkable") == "true"
                  and n.get("content-desc", "").startswith("RDP")), None)
