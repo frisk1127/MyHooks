@@ -12,4 +12,7 @@
     <string name="hook_effect_note">Restart the target app after changing a switch.</string>
     <string name="hook_count_format">%1$d hooks</string>
     <string name="module_status_label">Module status</string>
+    <string name="group_system">System</string>
+    <string name="group_apps">Apps</string>
+    <string name="status_version" translatable="false">%1$s · %2$s</string>
 </resources>

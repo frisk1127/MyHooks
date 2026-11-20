@@ -30,6 +30,11 @@ public class HyperOsNavBarHook implements AppHook {
     private boolean insetProviderStateLogged;
 
     @Override
+    public boolean isSystemHook() {
+        return true;
+    }
+
+    @Override
     public String getKey() {
         return "hyperos_navbar_fix";
     }

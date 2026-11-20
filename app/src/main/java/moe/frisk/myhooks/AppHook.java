@@ -6,6 +6,10 @@ public interface AppHook {
 
     String getKey();
 
+    default boolean isSystemHook() {
+        return false;
+    }
+
     String getTitle();
 
     String getDescription();

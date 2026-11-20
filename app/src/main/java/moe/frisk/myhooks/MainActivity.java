@@ -1,325 +1,201 @@
 package moe.frisk.myhooks;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Build;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.color.DynamicColors;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.divider.MaterialDivider;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
-/**
- * MainActivity designed strictly following Material Design 3 (MD3) Expressive specifications.
- * Uses MD3 tokens for color, typography, and shape.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends Activity {
+    private static final int MATCH = LinearLayout.LayoutParams.MATCH_PARENT;
+    private static final int WRAP = LinearLayout.LayoutParams.WRAP_CONTENT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         DynamicColors.applyToActivityIfAvailable(this);
         super.onCreate(savedInstanceState);
-        applySystemBars();
         HookPreferences.ensurePrefsReadable(this);
-        setContentView(createContentView());
-    }
-
-    private View createContentView() {
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.setFillViewport(true);
-        // Token: md.sys.color.surface
-        scrollView.setBackgroundColor(themeColor(com.google.android.material.R.attr.colorSurface));
-
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(16), 0, dp(16), dp(48));
-        scrollView.addView(root, new ScrollView.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        // 1. Large Top App Bar - Role: Headline Large (32sp)
-        root.addView(createLargeTopAppBar());
-
-        // 2. Status Widget - Role: primary-container / error-container
-        root.addView(createStatusHero());
-
-        // 3. Section Header - Role: Label Large (Emphasized)
-        root.addView(createSectionHeader(getString(R.string.hook_list_title)));
-
-        // 4. Hook Group - Role: surface-container (Shape: Extra Large 28dp)
-        root.addView(createHookListGroup());
-
-        return scrollView;
-    }
-
-    private View createLargeTopAppBar() {
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.VERTICAL);
-        header.setPadding(dp(12), dp(48), dp(12), dp(16));
-
-        TextView title = new TextView(this);
-        title.setText(R.string.app_name);
-        // Token: md.sys.color.on-surface
-        title.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurface));
-        // Token: md.sys.typescale.headline-large (32sp)
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 36);
-        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        title.setLetterSpacing(-0.02f); // Emphasized feel
-        header.addView(title);
-
-        return header;
-    }
-
-    private View createStatusHero() {
-        final boolean activated = isModuleActivated();
-        MaterialCardView card = new MaterialCardView(this);
-        // Tokens: primary-container / error-container
-        card.setCardBackgroundColor(themeColor(activated ? com.google.android.material.R.attr.colorPrimaryContainer : com.google.android.material.R.attr.colorErrorContainer));
-        // Smaller radius for LSPosed style
-        card.setRadius(dp(16));
-        card.setCardElevation(0);
-        card.setStrokeWidth(0);
-
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(0, 0, 0, dp(32));
-        card.setLayoutParams(params);
-
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.HORIZONTAL);
-        content.setGravity(Gravity.CENTER_VERTICAL);
-        content.setPadding(dp(20), dp(20), dp(20), dp(20));
-        card.addView(content);
-
-        // Tokens: on-primary-container / on-error-container
-        int textColor = themeColor(activated ? com.google.android.material.R.attr.colorOnPrimaryContainer : com.google.android.material.R.attr.colorOnErrorContainer);
-
-        // Icon
-        TextView icon = new TextView(this);
-        icon.setText(activated ? "✔" : "✖");
-        icon.setTextColor(themeColor(activated ? com.google.android.material.R.attr.colorPrimaryContainer : com.google.android.material.R.attr.colorErrorContainer));
-        icon.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        icon.setGravity(Gravity.CENTER);
-        
-        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-        bg.setColor(textColor);
-        icon.setBackground(bg);
-        
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(28), dp(28));
-        iconParams.setMarginEnd(dp(16));
-        content.addView(icon, iconParams);
-
-        // Text Column
-        LinearLayout textColumn = new LinearLayout(this);
-        textColumn.setOrientation(LinearLayout.VERTICAL);
-        content.addView(textColumn);
-
-        TextView statusText = new TextView(this);
-        statusText.setText(activated ? R.string.xposed_activated : R.string.xposed_unactivated);
-        statusText.setTextColor(textColor);
-        statusText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        statusText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        textColumn.addView(statusText);
-
-        TextView versionText = new TextView(this);
-        String versionName = "Unknown";
-        try {
-            versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-        } catch (Exception ignored) {}
-        versionText.setText(versionName);
-        versionText.setTextColor(textColor);
-        versionText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        versionText.setAlpha(0.8f);
-        versionText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        versionText.setPadding(0, dp(2), 0, 0);
-        textColumn.addView(versionText);
-
-        return card;
-    }
-
-    private View createSectionHeader(String text) {
-        TextView title = new TextView(this);
-        title.setText(text);
-        // Token: md.sys.color.primary
-        title.setTextColor(themeColor(com.google.android.material.R.attr.colorPrimary));
-        // Token: md.sys.typescale.label-large (14sp)
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        title.setPadding(dp(12), 0, dp(12), dp(16));
-        title.setAllCaps(true);
-        title.setLetterSpacing(0.15f);
-        return title;
-    }
-
-    private View createHookListGroup() {
-        MaterialCardView group = new MaterialCardView(this);
-        // Token: md.sys.color.surface-container
-        group.setCardBackgroundColor(themeColor(com.google.android.material.R.attr.colorSurfaceContainer));
-        // Token: md.sys.shape.corner.extra-large (28dp)
-        group.setRadius(dp(28));
-        group.setCardElevation(0);
-        group.setStrokeWidth(dp(1));
-        // Token: md.sys.color.outline-variant
-        group.setStrokeColor(themeColor(com.google.android.material.R.attr.colorOutlineVariant));
-
-        LinearLayout container = new LinearLayout(this);
-        container.setOrientation(LinearLayout.VERTICAL);
-        group.addView(container);
-
-        AppHook[] hooks = HookRegistry.HOOKS;
-        for (int i = 0; i < hooks.length; i++) {
-            container.addView(createHookItem(hooks[i]));
-            if (i < hooks.length - 1) {
-                MaterialDivider divider = new MaterialDivider(this);
-                divider.setDividerColor(themeColor(com.google.android.material.R.attr.colorOutlineVariant));
-                // Align with text inset
-                divider.setDividerInsetStart(dp(24));
-                divider.setDividerInsetEnd(dp(24));
-                container.addView(divider);
-            }
-        }
-
-        return group;
-    }
-
-    private View createHookItem(final AppHook hook) {
-        LinearLayout item = new LinearLayout(this);
-        item.setOrientation(LinearLayout.VERTICAL);
-        item.setPadding(dp(24), dp(20), dp(24), dp(20));
-        item.setClickable(true);
-        item.setFocusable(true);
-        
-        // MD3 Ripple effect
-        TypedValue outValue = new TypedValue();
-        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
-        item.setBackgroundResource(outValue.resourceId);
-
-        LinearLayout top = new LinearLayout(this);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(Gravity.CENTER_VERTICAL);
-        item.addView(top);
-
-        TextView title = new TextView(this);
-        title.setText(hook.getTitle());
-        title.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurface));
-        // Token: md.sys.typescale.title-large (20sp) - Reduced for better multi-line
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-        title.setLineSpacing(0, 1.15f);
-        top.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-
-        final MaterialSwitch toggle = new MaterialSwitch(this);
-        toggle.setChecked(HookPreferences.isHookEnabled(this, hook));
-        toggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            HookPreferences.setHookEnabled(MainActivity.this, hook, isChecked);
-        });
-        // Ensure switch has proper MD3 spacing
-        LinearLayout.LayoutParams toggleParams = new LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        toggleParams.setMarginStart(dp(16));
-        toggleParams.gravity = Gravity.TOP; // Align to top when title wraps
-        top.addView(toggle, toggleParams);
-
-        TextView desc = new TextView(this);
-        desc.setText(hook.getDescription());
-        desc.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
-        // Token: md.sys.typescale.body-medium (14sp)
-        desc.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        desc.setPadding(0, dp(10), 0, 0);
-        desc.setLineSpacing(0, 1.35f);
-        item.addView(desc);
-
-        item.setOnClickListener(v -> showHookInfo(hook));
-
-        return item;
-    }
-
-    private void showHookInfo(AppHook hook) {
-        // MaterialAlertDialogBuilder strictly follows MD3 dialog tokens
-        new MaterialAlertDialogBuilder(this)
-            .setTitle(hook.getTitle())
-            .setMessage(buildHookInfoMessage(hook))
-            .setPositiveButton(android.R.string.ok, null)
-            .show();
-    }
-
-    private String buildHookInfoMessage(AppHook hook) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(hook.getDescription()).append("\n\n");
-        sb.append(getString(R.string.target_packages_label)).append("\n");
-        String[] targets = hook.getTargetPackages();
-        if (targets != null) {
-            for (String target : targets) {
-                sb.append("• ").append(target).append("\n");
-            }
-        }
-        sb.append("\n").append(getString(R.string.hook_effect_note));
-        return sb.toString();
-    }
-
-    private View createFooter() {
-        TextView footer = new TextView(this);
-        try {
-            String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            footer.setText("Version " + versionName);
-        } catch (Exception e) {
-            footer.setText("MyHooks");
-        }
-        footer.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
-        // Token: md.sys.typescale.label-small (11sp)
-        footer.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-        footer.setAlpha(0.5f);
-        footer.setGravity(Gravity.CENTER);
-        footer.setPadding(0, dp(64), 0, dp(16));
-        return footer;
-    }
-
-    private void applySystemBars() {
-        // Use modern WindowCompat for edge-to-edge system bars configuration
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        
-        if (Build.VERSION.SDK_INT >= 21) {
-            // Set bars transparent to allow content to flow under or color matching
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-            getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        boolean light = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+            != Configuration.UI_MODE_NIGHT_YES;
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightStatusBars(light);
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView()).setAppearanceLightNavigationBars(light);
+
+        LinearLayout page = column();
+        page.setBackgroundColor(color(com.google.android.material.R.attr.colorSurface));
+        ViewCompat.setOnApplyWindowInsetsListener(page, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            return insets;
+        });
+        page.addView(header(), MATCH, WRAP);
+        ScrollView scroll = new ScrollView(this);
+        page.addView(scroll, new LinearLayout.LayoutParams(MATCH, 0, 1));
+        LinearLayout list = column();
+        list.setPadding(0, dp(8), 0, dp(24));
+        scroll.addView(list);
+        List<AppHook> system = new ArrayList<>();
+        List<AppHook> apps = new ArrayList<>();
+        for (AppHook hook : HookRegistry.HOOKS) {
+            (hook.isSystemHook() ? system : apps).add(hook);
         }
+        addGroup(list, R.string.group_system, system);
+        addGroup(list, R.string.group_apps, apps);
+        setContentView(page);
+    }
+
+    private LinearLayout header() {
+        LinearLayout row = row();
+        row.setPadding(dp(16), dp(12), dp(8), dp(12));
+        row.setBackgroundColor(color(com.google.android.material.R.attr.colorSurfaceContainer));
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.drawable.ic_launcher);
+        row.addView(logo, dp(40), dp(40));
+        LinearLayout labels = column();
+        labels.setPadding(dp(12), 0, 0, 0);
+        row.addView(labels, new LinearLayout.LayoutParams(0, WRAP, 1));
+        labels.addView(label(getString(R.string.app_name), 24, true));
+        String version = "";
+        try {
+            version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException ignored) { }
+        String status = getString(isModuleActivated() ? R.string.xposed_activated : R.string.xposed_unactivated);
+        TextView subtitle = label(getString(R.string.status_version, status, version), 14, false);
+        labels.addView(subtitle);
+        ImageButton info = new ImageButton(this);
+        info.setImageResource(R.drawable.ic_module_info);
+        info.setColorFilter(color(com.google.android.material.R.attr.colorOnSurfaceVariant));
+        info.setContentDescription(getString(R.string.module_status_label));
+        ripple(info);
+        info.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.app_name).setMessage(subtitle.getText())
+            .setPositiveButton(android.R.string.ok, null).show());
+        row.addView(info, dp(48), dp(48));
+        return row;
+    }
+
+    private void addGroup(LinearLayout list, int titleId, List<AppHook> hooks) {
+        if (hooks.isEmpty()) return;
+        LinearLayout heading = row();
+        heading.setPadding(dp(20), dp(14), dp(20), dp(6));
+        TextView title = label(getString(titleId), 16, true);
+        title.setTextColor(color(com.google.android.material.R.attr.colorPrimary));
+        heading.addView(title, new LinearLayout.LayoutParams(0, WRAP, 1));
+        heading.addView(label(Integer.toString(hooks.size()), 14, false));
+        list.addView(heading, MATCH, WRAP);
+        for (int i = 0; i < hooks.size(); i++) {
+            if (i > 0) {
+                View divider = new View(this);
+                divider.setBackgroundColor(color(com.google.android.material.R.attr.colorOutlineVariant));
+                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(MATCH, dp(1));
+                p.setMarginStart(dp(76));
+                list.addView(divider, p);
+            }
+            list.addView(hookRow(hooks.get(i)), MATCH, WRAP);
+        }
+    }
+
+    private LinearLayout hookRow(AppHook hook) {
+        LinearLayout row = row();
+        row.setPadding(dp(16), dp(12), dp(12), dp(12));
+        ripple(row);
+        ImageView icon = new ImageView(this);
+        icon.setImageDrawable(targetIcon(hook));
+        row.addView(icon, dp(48), dp(48));
+        LinearLayout labels = column();
+        labels.setPadding(dp(12), 0, dp(8), 0);
+        row.addView(labels, new LinearLayout.LayoutParams(0, WRAP, 1));
+        TextView title = label(hook.getTitle(), 18, true);
+        title.setSingleLine();
+        title.setEllipsize(TextUtils.TruncateAt.END);
+        labels.addView(title);
+        TextView description = label(hook.getDescription(), 14, false);
+        description.setPadding(0, dp(4), 0, 0);
+        labels.addView(description);
+        MaterialSwitch toggle = new MaterialSwitch(this);
+        toggle.setContentDescription(hook.getTitle());
+        toggle.setChecked(HookPreferences.isHookEnabled(this, hook));
+        toggle.setOnCheckedChangeListener((button, checked) -> HookPreferences.setHookEnabled(this, hook, checked));
+        row.addView(toggle, WRAP, WRAP);
+        row.setOnClickListener(v -> new MaterialAlertDialogBuilder(this).setTitle(hook.getTitle())
+            .setMessage(hook.getDescription() + "\n\n" + getString(R.string.target_packages_label)
+                + "\n" + TextUtils.join("\n", hook.getTargetPackages()) + "\n\n" + getString(R.string.hook_effect_note))
+            .setPositiveButton(android.R.string.ok, null).show());
+        return row;
+    }
+
+    private Drawable targetIcon(AppHook hook) {
+        PackageManager pm = getPackageManager();
+        for (String name : hook.getTargetPackages()) {
+            try {
+                return pm.getApplicationIcon(name);
+            } catch (PackageManager.NameNotFoundException ignored) { }
+        }
+        return pm.getDefaultActivityIcon();
+    }
+
+    private LinearLayout column() {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        return layout;
+    }
+
+    private LinearLayout row() {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setGravity(Gravity.CENTER_VERTICAL);
+        return layout;
+    }
+
+    private TextView label(String value, int size, boolean bold) {
+        TextView text = new TextView(this);
+        text.setText(value);
+        text.setTextSize(size);
+        text.setTextColor(color(bold ? com.google.android.material.R.attr.colorOnSurface
+            : com.google.android.material.R.attr.colorOnSurfaceVariant));
+        if (bold) text.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        return text;
+    }
+
+    private void ripple(View view) {
+        TypedValue value = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.selectableItemBackground, value, true)) {
+            view.setBackgroundResource(value.resourceId);
+        }
+        view.setFocusable(true);
+    }
+
+    private int color(int attr) {
+        return MaterialColors.getColor(this, attr, 0);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     public static boolean isModuleActivated() {
         return false;
-    }
-
-    private int themeColor(int attrResId) {
-        return MaterialColors.getColor(this, attrResId, 0);
-    }
-
-    private int dp(int value) {
-        return Math.round(TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            value,
-            getResources().getDisplayMetrics()
-        ));
     }
 }

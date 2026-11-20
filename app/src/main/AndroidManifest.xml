@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <queries>
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.tencent.tim" />
+        <package android:name="tv.danmaku.bili" />
+        <package android:name="com.android.systemui" />
+        <package android:name="com.miui.securitycenter" />
+        <package android:name="com.microsoft.rdc.androidx" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:hasCode="true"

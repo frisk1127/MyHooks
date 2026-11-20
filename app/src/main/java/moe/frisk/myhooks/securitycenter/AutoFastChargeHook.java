@@ -26,6 +26,11 @@ public class AutoFastChargeHook implements AppHook {
     private int lastPlugType = -1;
 
     @Override
+    public boolean isSystemHook() {
+        return true;
+    }
+
+    @Override
     public String getKey() {
         return "auto_fast_charge";
     }

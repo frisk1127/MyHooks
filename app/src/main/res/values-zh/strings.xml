@@ -11,4 +11,6 @@
     <string name="hook_effect_note">切换开关后，需要重启目标 App 才会生效。</string>
     <string name="hook_count_format">%1$d 个 Hook</string>
     <string name="module_status_label">模块状态</string>
+    <string name="group_system">系统</string>
+    <string name="group_apps">应用</string>
 </resources>
