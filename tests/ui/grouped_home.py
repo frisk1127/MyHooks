@@ -15,9 +15,9 @@ def screen():
     return ET.fromstring(adb("shell", "cat", "/data/local/tmp/myhooks-window.xml"))
 
 
-def tap(node):
+def bounds(node):
     left, top, right, bottom = map(int, re.findall(r"\d+", node.attrib["bounds"]))
-    adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
+    return left, top, right, bottom
 
 
 def find_text(root, label):
@@ -31,16 +31,29 @@ adb("shell", "am", "start", "-W", "-n", "moe.frisk.myhooks/.MainActivity")
 root = screen()
 for label in ("MyHooks", "System", "2", "Apps", "3"):
     assert find_text(root, label) is not None, (label, ET.tostring(root, encoding="unicode"))
-rdp = "RDP 会话控件增强"
-for attempt in range(4):
-    title = find_text(root, rdp)
-    if title is not None:
+def rdp_switch(root):
+    return next((n for n in root.iter("node") if n.get("checkable") == "true"
+                 and n.get("content-desc", "").startswith("RDP")), None)
+
+
+for attempt in range(5):
+    switch = rdp_switch(root)
+    if switch is not None:
         break
-    adb("shell", "input", "swipe", "520", "1950", "520", "650", "350")
+    print([(n.get("class"), n.get("text"), n.get("content-desc"), n.get("bounds"))
+           for n in root.iter("node") if n.get("text") or n.get("content-desc")], flush=True)
+    scroll = next(n for n in root.iter("node") if n.get("scrollable") == "true")
+    left, top, right, bottom = bounds(scroll)
+    x = str((left + right) // 2)
+    adb("shell", "input", "swipe", x, str(bottom - 32), x, str(top + 32), "400")
     root = screen()
-assert title is not None, "RDP is missing from the apps group"
-assert any(n.get("content-desc") == rdp and n.get("checkable") == "true" for n in root.iter("node")), "RDP switch missing"
-tap(title)
+assert switch is not None, ET.tostring(root, encoding="unicode")
+parents = {child: parent for parent in root.iter() for child in parent}
+row = parents[switch]
+while row.get("clickable") != "true":
+    row = parents[row]
+left, top, right, bottom = bounds(row)
+adb("shell", "input", "tap", str((left + bounds(switch)[0]) // 2), str((top + bottom) // 2))
 for _ in range(3):
     root = screen()
     if any("com.microsoft.rdc.androidx" in n.get("text", "") for n in root.iter("node")):
