@@ -22,5 +22,9 @@ public interface AppHook {
         return Arrays.asList(getTargetPackages()).contains("android");
     }
 
+    default boolean shouldInstallInHost() {
+        return HookPreferences.isHookEnabledInHost(this);
+    }
+
     void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable;
 }

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 
 import java.io.File;
+import moe.frisk.myhooks.refresh.VideoRefreshConfig;
 
 import de.robv.android.xposed.XSharedPreferences;
 
@@ -18,10 +19,15 @@ public final class HookPreferences {
     }
 
     public static boolean isHookEnabled(Context context, AppHook hook) {
+        if (VideoRefreshConfig.KEY.equals(hook.getKey())) return VideoRefreshConfig.enabled(context);
         return preferences(context, hook).getBoolean(hook.getKey(), true);
     }
 
     public static void setHookEnabled(Context context, AppHook hook, boolean enabled) {
+        if (VideoRefreshConfig.KEY.equals(hook.getKey())) {
+            VideoRefreshConfig.setEnabled(context, enabled);
+            return;
+        }
         SharedPreferences.Editor editor = preferences(context, hook).edit().putBoolean(hook.getKey(), enabled);
         if (hook.targetsSystemFramework()) {
             if (editor.commit()) {

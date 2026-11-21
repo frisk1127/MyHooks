@@ -19,7 +19,7 @@ public class HookEntry implements IXposedHookLoadPackage {
             if (!isTargetPackage(hook, lpparam.packageName)) {
                 continue;
             }
-            if (!HookPreferences.isHookEnabledInHost(hook)) {
+            if (!hook.shouldInstallInHost()) {
                 continue;
             }
             try {

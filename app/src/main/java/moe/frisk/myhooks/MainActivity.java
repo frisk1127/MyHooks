@@ -1,6 +1,7 @@
 package moe.frisk.myhooks;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
@@ -28,6 +29,8 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 
 import java.util.ArrayList;
 import java.util.List;
+import moe.frisk.myhooks.refresh.VideoAppsActivity;
+import moe.frisk.myhooks.refresh.VideoRefreshConfig;
 
 public class MainActivity extends Activity {
     private static final int MATCH = LinearLayout.LayoutParams.MATCH_PARENT;
@@ -140,6 +143,10 @@ public class MainActivity extends Activity {
         toggle.setChecked(HookPreferences.isHookEnabled(this, hook));
         toggle.setOnCheckedChangeListener((button, checked) -> HookPreferences.setHookEnabled(this, hook, checked));
         row.addView(toggle, WRAP, WRAP);
+        if (VideoRefreshConfig.KEY.equals(hook.getKey())) {
+            row.setOnClickListener(v -> startActivity(new Intent(this, VideoAppsActivity.class)));
+            return row;
+        }
         row.setOnClickListener(v -> new MaterialAlertDialogBuilder(this).setTitle(hook.getTitle())
             .setMessage(hook.getDescription() + "\n\n" + getString(R.string.target_packages_label)
                 + "\n" + TextUtils.join("\n", hook.getTargetPackages()) + "\n\n"

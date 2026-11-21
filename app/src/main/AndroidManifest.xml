@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
     <queries>
         <package android:name="com.tencent.mobileqq" />
         <package android:name="com.tencent.tim" />
@@ -18,6 +20,13 @@
         android:resizeableActivity="true"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
+
+        <activity android:name=".refresh.VideoAppsActivity" android:exported="false" />
+        <provider
+            android:name=".refresh.VideoRefreshProvider"
+            android:authorities="moe.frisk.myhooks.video_refresh"
+            android:directBootAware="true"
+            android:exported="true" />
 
         <activity
             android:name=".MainActivity"

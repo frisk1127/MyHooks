@@ -2,10 +2,7 @@ name: Android
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - dev
+    branches: ['**']
   pull_request:
   workflow_dispatch:
 
@@ -26,6 +23,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
