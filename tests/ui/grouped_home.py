@@ -30,25 +30,31 @@ adb("shell", "wm", "density", "320")
 adb("shell", "am", "start", "-W", "-n", "moe.frisk.myhooks/.MainActivity")
 root = screen()
 assert find_text(root, "MyHooks") is not None
-for label, count in (("System", "4"), ("Apps", "3")):
-    assert any([child.get("text") for child in node] == [label, count]
-               for node in root.iter("node")), (label, ET.tostring(root, encoding="unicode"))
+
+
 def rdp_switch(root):
     return next((n for n in root.iter("node") if n.get("checkable") == "true"
                  and n.get("content-desc", "").startswith("RDP")), None)
 
 
-for attempt in range(5):
+expected_groups = {("System", "4"), ("Apps", "3")}
+seen_groups = set()
+for attempt in range(6):
+    for node in root.iter("node"):
+        labels = tuple(child.get("text") for child in node)
+        if labels in expected_groups:
+            seen_groups.add(labels)
     switch = rdp_switch(root)
-    if switch is not None:
+    if switch is not None and seen_groups == expected_groups:
         break
     print([(n.get("class"), n.get("text"), n.get("content-desc"), n.get("bounds"))
            for n in root.iter("node") if n.get("text") or n.get("content-desc")], flush=True)
     scroll = next(n for n in root.iter("node") if n.get("scrollable") == "true")
     left, top, right, bottom = bounds(scroll)
     x = str((left + right) // 2)
-    adb("shell", "input", "swipe", x, str(bottom - 32), x, str(top + 32), "400")
+    adb("shell", "input", "swipe", x, str(bottom - 32), x, str((top + bottom) // 2), "400")
     root = screen()
+assert seen_groups == expected_groups, ("Missing group headers", expected_groups - seen_groups)
 assert switch is not None, ET.tostring(root, encoding="unicode")
 parents = {child: parent for parent in root.iter() for child in parent}
 row = parents[switch]
