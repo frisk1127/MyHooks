@@ -1,0 +1,4 @@
+<resources>
+    <item name="all_apps_tab" type="id" />
+    <item name="selected_apps_tab" type="id" />
+</resources>

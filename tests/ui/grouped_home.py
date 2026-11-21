@@ -1,4 +1,4 @@
-"""Smoke-test the MyHooks release UI in an Android emulator."""
+"""Smoke-test the MyHooks settings and app picker in an Android emulator."""
 import re
 import subprocess
 import sys
@@ -24,12 +24,58 @@ def find_text(root, label):
     return next((n for n in root.iter("node") if n.get("text") == label), None)
 
 
+def tap(node):
+    left, top, right, bottom = bounds(node)
+    adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
+
+
+def wait_node(predicate):
+    for _ in range(5):
+        root = screen()
+        node = next((n for n in root.iter("node") if predicate(n)), None)
+        if node is not None:
+            return node
+    raise AssertionError(ET.tostring(root, encoding="unicode"))
+
+
+def control(name):
+    return wait_node(lambda n: n.get("resource-id") == "moe.frisk.myhooks:id/" + name)
+
+
+def verify_app_picker():
+    pkg = "moe.frisk.myhooks"
+
+    def is_app(n):
+        return n.get("checkable") == "true" and n.get("content-desc", "").endswith(pkg)
+
+    tap(wait_node(lambda n: n.get("text") == "应用高刷与画质增强"))
+    tap(control("app_search"))
+    adb("shell", "input", "text", pkg)
+    app = wait_node(is_app)
+    was_selected = app.get("checked") == "true"
+    if not was_selected:
+        tap(app)
+    tap(control("selected_apps_tab"))
+    tap(wait_node(lambda n: is_app(n) and n.get("checked") == "true"))
+    control("empty_list")
+    tap(control("all_apps_tab"))
+    app = wait_node(lambda n: is_app(n) and n.get("checked") == "false")
+    if was_selected:
+        tap(app)
+    tap(control("clear_search"))
+    assert control("app_search").get("text") != pkg
+    tap(control("back"))
+    wait_node(lambda n: n.get("text") == "MyHooks")
+
+
 adb("install", "-r", sys.argv[1])
 adb("shell", "wm", "size", "1080x2400")
 adb("shell", "wm", "density", "320")
 adb("shell", "am", "start", "-W", "-n", "moe.frisk.myhooks/.MainActivity")
 root = screen()
 assert find_text(root, "MyHooks") is not None
+verify_app_picker()
+root = screen()
 
 
 def rdp_switch(root):

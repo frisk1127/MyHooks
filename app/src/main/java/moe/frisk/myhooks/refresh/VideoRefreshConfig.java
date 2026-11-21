@@ -44,6 +44,10 @@ public final class VideoRefreshConfig {
         return new HashSet<>(prefs(context).getStringSet(PACKAGES, DEFAULT));
     }
 
+    public static int selectedCount(Context context) {
+        return prefs(context).getStringSet(PACKAGES, DEFAULT).size();
+    }
+
     static boolean save(Context context, Set<String> packages) {
         boolean saved = prefs(context).edit().putStringSet(PACKAGES, new HashSet<>(packages)).commit();
         if (saved) notifyHosts(context);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="68dp"
+    android:gravity="center_vertical" android:paddingStart="14dp" android:paddingEnd="12dp"
+    android:paddingTop="9dp" android:paddingBottom="9dp">
+    <ImageView android:id="@+id/app_icon" android:layout_width="40dp" android:layout_height="40dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+        android:orientation="vertical" android:paddingStart="12dp" android:paddingEnd="8dp"
+        android:importantForAccessibility="noHideDescendants">
+        <TextView android:id="@+id/app_label" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textSize="16sp" android:fontFamily="sans-serif-medium" android:textColor="?attr/colorOnSurface"
+            android:maxLines="2" android:ellipsize="end" />
+        <TextView android:id="@+id/app_package" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="2dp" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant"
+            android:singleLine="true" android:ellipsize="middle" />
+    </LinearLayout>
+    <com.google.android.material.checkbox.MaterialCheckBox android:id="@+id/app_checked"
+        android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="0dp" android:minHeight="0dp"
+        android:focusable="false" android:clickable="false" android:importantForAccessibility="no" />
+</LinearLayout>

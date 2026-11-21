@@ -21,7 +21,8 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".refresh.VideoAppsActivity" android:exported="false" />
+        <activity android:name=".refresh.VideoAppsActivity" android:exported="false"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
         <provider
             android:name=".refresh.VideoRefreshProvider"
             android:authorities="moe.frisk.myhooks.video_refresh"

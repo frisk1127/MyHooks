@@ -16,4 +16,18 @@
     <string name="group_system">System</string>
     <string name="group_apps">Apps</string>
     <string name="status_version" translatable="false">%1$s · %2$s</string>
+    <string name="refresh_selected_count">Selected (%1$d)</string>
+    <string name="refresh_all_apps">All apps</string>
+    <string name="refresh_picker">High refresh rate apps</string>
+    <string name="refresh_search">Search apps or packages</string>
+    <string name="refresh_clear_search">Clear search</string>
+    <string name="refresh_help">About high refresh rate apps</string>
+    <string name="refresh_help_body">Selected apps request up to 120 Hz in the foreground and skip PowerKeeper’s app-level 60 Hz limits. Dual-chip video enhancement applies to supported player screens. Selections are saved automatically and take effect when you reopen the app.</string>
+    <string name="refresh_loading">Loading apps…</string>
+    <string name="refresh_no_match">No matching apps</string>
+    <string name="refresh_none_selected">No apps selected</string>
+    <string name="refresh_save_error">Couldn’t save selection</string>
+    <string name="refresh_back">Back</string>
+    <string name="refresh_manage_summary">Manage apps · %1$d selected</string>
+    <string name="refresh_not_installed">Not installed</string>
 </resources>

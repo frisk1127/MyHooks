@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:focusableInTouchMode="true">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:minHeight="60dp" android:gravity="center_vertical" android:paddingStart="6dp" android:paddingEnd="8dp">
+        <ImageButton android:id="@+id/back" android:layout_width="48dp" android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless" android:src="?attr/homeAsUpIndicator"
+            android:tint="?attr/colorOnSurface" android:contentDescription="@string/refresh_back" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:paddingStart="6dp" android:paddingEnd="4dp" android:text="@string/refresh_picker"
+            android:textColor="?attr/colorOnSurface" android:textSize="22sp" android:fontFamily="sans-serif-medium" />
+        <ImageButton android:id="@+id/help" android:layout_width="48dp" android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_module_info"
+            android:tint="?attr/colorOnSurfaceVariant" android:contentDescription="@string/refresh_help" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/search_region" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginStart="16dp" android:layout_marginEnd="16dp" android:layout_marginTop="4dp"
+        android:gravity="center_vertical" android:minHeight="50dp" android:paddingStart="16dp" android:paddingEnd="4dp">
+        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/abc_ic_search_api_material"
+            android:tint="?attr/colorOnSurfaceVariant" android:importantForAccessibility="no" />
+        <EditText android:id="@+id/app_search" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:minHeight="48dp" android:background="@null" android:paddingStart="12dp"
+            android:paddingEnd="8dp" android:singleLine="true" android:inputType="text|textNoSuggestions"
+            android:imeOptions="actionSearch" android:hint="@string/refresh_search" android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface" android:textColorHint="?attr/colorOnSurfaceVariant" />
+        <ImageButton android:id="@+id/clear_search" android:layout_width="48dp" android:layout_height="48dp"
+            android:visibility="gone" android:src="@drawable/abc_ic_clear_material" android:tint="?attr/colorOnSurfaceVariant"
+            android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="@string/refresh_clear_search" />
+    </LinearLayout>
+
+    <com.google.android.material.tabs.TabLayout android:id="@+id/app_tabs" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="6dp"
+        android:layout_marginStart="16dp" android:layout_marginEnd="16dp" android:background="@android:color/transparent"
+        app:tabMode="fixed" app:tabGravity="fill" app:tabIndicatorFullWidth="false"
+        app:tabSelectedTextColor="?attr/colorPrimary" app:tabTextColor="?attr/colorOnSurfaceVariant" />
+
+    <FrameLayout android:id="@+id/app_panel" android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp" android:layout_marginBottom="12dp" android:clipToOutline="true">
+        <ListView android:id="@+id/app_list" android:layout_width="match_parent" android:layout_height="match_parent"
+            android:divider="@null" android:drawSelectorOnTop="true" android:scrollbarStyle="insideOverlay"
+            android:paddingTop="4dp" android:paddingBottom="4dp" android:clipToPadding="false" />
+        <TextView android:id="@+id/empty_list" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:padding="24dp" android:layout_gravity="center" android:gravity="center"
+            android:text="@string/refresh_loading" android:textSize="15sp" android:textColor="?attr/colorOnSurfaceVariant" />
+    </FrameLayout>
+</LinearLayout>

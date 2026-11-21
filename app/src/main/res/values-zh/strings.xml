@@ -14,4 +14,18 @@
     <string name="module_status_label">模块状态</string>
     <string name="group_system">系统</string>
     <string name="group_apps">应用</string>
+    <string name="refresh_selected_count">已选 (%1$d)</string>
+    <string name="refresh_all_apps">全部应用</string>
+    <string name="refresh_picker">高刷应用</string>
+    <string name="refresh_search">搜索应用名称或包名</string>
+    <string name="refresh_clear_search">清空搜索</string>
+    <string name="refresh_help">高刷应用说明</string>
+    <string name="refresh_help_body">所选应用在前台请求最高 120 Hz，并跳过 PowerKeeper 的应用级 60 Hz 限制。双芯画质增强仅作用于系统已适配的播放页。勾选后自动保存，重新进入应用生效。</string>
+    <string name="refresh_loading">正在读取应用…</string>
+    <string name="refresh_no_match">没有匹配的应用</string>
+    <string name="refresh_none_selected">还没有选中的应用</string>
+    <string name="refresh_save_error">保存失败</string>
+    <string name="refresh_back">返回</string>
+    <string name="refresh_manage_summary">管理应用 · 已选 %1$d 个</string>
+    <string name="refresh_not_installed">未安装</string>
 </resources>

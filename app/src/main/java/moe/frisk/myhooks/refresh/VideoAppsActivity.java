@@ -1,24 +1,23 @@
 package moe.frisk.myhooks.refresh;
 
-import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.RelativeSizeSpan;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.CheckedTextView;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.tabs.TabLayout;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -26,145 +25,162 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public final class VideoAppsActivity extends Activity {
-    private final List<Entry> apps = new ArrayList<>();
-    private final List<Entry> shown = new ArrayList<>();
+import moe.frisk.myhooks.R;
+import moe.frisk.myhooks.ui.ModuleActivity;
+
+public final class VideoAppsActivity extends ModuleActivity {
+    private final List<AppRows.Entry> apps = new ArrayList<>();
+    private final List<AppRows.Entry> shown = new ArrayList<>();
+    private final ExecutorService workers = Executors.newFixedThreadPool(2);
     private Set<String> selected;
-    private AppsAdapter adapter;
+    private AppRows adapter;
+    private ListView list;
     private EditText search;
-    private TextView count;
+    private ImageButton clear;
     private TextView empty;
+    private TabLayout.Tab selectedTab;
+    private boolean selectedOnly;
+    private boolean loading = true;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         selected = VideoRefreshConfig.packages(this);
-        LinearLayout page = new LinearLayout(this);
-        page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(16), dp(8), dp(16), 0);
-        page.setFocusableInTouchMode(true);
-        LinearLayout header = new LinearLayout(this);
-        header.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        Button back = new Button(this, null, android.R.attr.borderlessButtonStyle);
-        back.setText("返回");
-        back.setOnClickListener(v -> finish());
-        header.addView(back);
-        TextView title = new TextView(this);
-        title.setText("高刷应用");
-        title.setTextSize(22);
-        header.addView(title, new LinearLayout.LayoutParams(0, -2, 1));
-        count = new TextView(this);
-        header.addView(count);
-        page.addView(header);
-        TextView hint = new TextView(this);
-        hint.setText("重新进入所选应用生效。双芯画质增强仅作用于系统已适配的播放页。");
-        page.addView(hint);
-        search = new EditText(this);
-        search.setSingleLine();
-        search.setHint("搜索应用名称或包名");
-        page.addView(search);
-        ListView list = new ListView(this);
-        adapter = new AppsAdapter();
+        selectedOnly = state != null && state.getBoolean("selectedOnly");
+        View page = getLayoutInflater().inflate(R.layout.activity_video_apps, null);
+        showPage(page, true);
+        findViewById(R.id.back).setOnClickListener(v -> finish());
+        findViewById(R.id.help).setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.refresh_help).setMessage(R.string.refresh_help_body)
+            .setPositiveButton(android.R.string.ok, null).show());
+        findViewById(R.id.app_panel).setBackground(surface(com.google.android.material.R.attr.colorSurfaceContainer, 20));
+        findViewById(R.id.search_region).setBackground(surface(com.google.android.material.R.attr.colorSurfaceContainerHigh, 26));
+
+        list = findViewById(R.id.app_list);
+        empty = findViewById(R.id.empty_list);
+        search = findViewById(R.id.app_search);
+        clear = findViewById(R.id.clear_search);
+        adapter = new AppRows(this, shown, selected, workers);
         list.setAdapter(adapter);
-        list.setOnItemClickListener((parent, view, position, id) -> {
-            String pkg = shown.get(position).pkg;
-            Set<String> next = new HashSet<>(selected);
-            if (!next.remove(pkg)) next.add(pkg);
-            if (VideoRefreshConfig.save(this, next)) selected = next;
-            else Toast.makeText(this, "保存失败", Toast.LENGTH_SHORT).show();
-            updateCount();
-            adapter.notifyDataSetChanged();
-        });
-        empty = new TextView(this);
-        empty.setGravity(android.view.Gravity.CENTER);
-        empty.setText("正在读取应用…");
-        page.addView(empty, -1, dp(56));
-        page.addView(list, new LinearLayout.LayoutParams(-1, 0, 1));
         list.setEmptyView(empty);
-        setContentView(page);
-        page.setOnApplyWindowInsetsListener((v, insets) -> {
-            v.setPadding(dp(16) + insets.getSystemWindowInsetLeft(), dp(8) + insets.getSystemWindowInsetTop(),
-                dp(16) + insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
-            return insets;
-        });
-        page.requestApplyInsets();
+        list.setOnItemClickListener((parent, view, position, id) -> toggle(shown.get(position).pkg));
+
+        TabLayout tabs = findViewById(R.id.app_tabs);
+        tabs.addTab(tabs.newTab().setId(R.id.all_apps_tab).setText(R.string.refresh_all_apps), !selectedOnly);
+        selectedTab = tabs.newTab().setId(R.id.selected_apps_tab);
         updateCount();
+        tabs.addTab(selectedTab, selectedOnly);
+        tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override public void onTabSelected(TabLayout.Tab tab) {
+                selectedOnly = tab == selectedTab;
+                filter(true);
+            }
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
+        clear.setOnClickListener(v -> search.setText(""));
         search.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { filter(); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                clear.setVisibility(s.length() == 0 ? View.GONE : View.VISIBLE);
+                filter(true);
+            }
             @Override public void afterTextChanged(Editable e) {}
+        });
+        search.setOnEditorActionListener((v, action, event) -> {
+            if (action != EditorInfo.IME_ACTION_SEARCH) return false;
+            getSystemService(InputMethodManager.class).hideSoftInputFromWindow(v.getWindowToken(), 0);
+            return true;
         });
         if (state != null) search.setText(state.getString("query", ""));
         Set<String> initial = new HashSet<>(selected);
-        new Thread(() -> loadApps(initial), "MyHooks-AppList").start();
+        workers.execute(() -> loadApps(initial, state));
     }
 
-    private void loadApps(Set<String> initial) {
+    private void toggle(String pkg) {
+        Set<String> next = new HashSet<>(selected);
+        if (!next.remove(pkg)) next.add(pkg);
+        if (!VideoRefreshConfig.save(this, next)) {
+            Toast.makeText(this, R.string.refresh_save_error, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        selected.clear();
+        selected.addAll(next);
+        updateCount();
+        filter(false);
+    }
+
+    private void loadApps(Set<String> initial, Bundle state) {
         PackageManager pm = getPackageManager();
-        List<Entry> loaded = new ArrayList<>();
+        Intent launcher = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+        Set<String> launchable = new HashSet<>();
+        for (ResolveInfo app : pm.queryIntentActivities(launcher, 0)) launchable.add(app.activityInfo.packageName);
+        List<AppRows.Entry> loaded = new ArrayList<>();
         Set<String> missing = new HashSet<>(initial);
         for (ApplicationInfo info : pm.getInstalledApplications(0)) {
+            if (Thread.currentThread().isInterrupted()) return;
             missing.remove(info.packageName);
-            loaded.add(new Entry(info.loadLabel(pm).toString(), info.packageName));
+            loaded.add(new AppRows.Entry(info.loadLabel(pm).toString(), info.packageName, info));
         }
-        for (String pkg : missing) loaded.add(new Entry(pkg, pkg));
+        for (String pkg : missing) loaded.add(new AppRows.Entry(pkg, pkg, null));
         Collator collator = Collator.getInstance();
         loaded.sort((a, b) -> {
             int checked = Boolean.compare(initial.contains(b.pkg), initial.contains(a.pkg));
             if (checked != 0) return checked;
-            int byName = collator.compare(a.label, b.label);
-            return byName != 0 ? byName : a.pkg.compareTo(b.pkg);
+            int launches = Boolean.compare(launchable.contains(b.pkg), launchable.contains(a.pkg));
+            if (launches != 0) return launches;
+            int name = collator.compare(a.label, b.label);
+            return name != 0 ? name : a.pkg.compareTo(b.pkg);
         });
         runOnUiThread(() -> {
             if (isFinishing() || isDestroyed()) return;
+            loading = false;
             apps.addAll(loaded);
-            empty.setText("没有匹配的应用");
-            filter();
+            filter(false);
+            if (state != null) {
+                String anchor = state.getString("anchor");
+                for (int i = 0; anchor != null && i < shown.size(); i++) {
+                    if (shown.get(i).pkg.equals(anchor)) {
+                        list.setSelectionFromTop(i, state.getInt("offset"));
+                        break;
+                    }
+                }
+            }
         });
     }
 
-    private void filter() {
+    private void filter(boolean resetScroll) {
         String query = search.getText().toString().trim().toLowerCase(Locale.ROOT);
         shown.clear();
-        for (Entry entry : apps) {
-            if (entry.searchable.contains(query)) shown.add(entry);
+        for (AppRows.Entry entry : apps) {
+            if ((!selectedOnly || selected.contains(entry.pkg)) && entry.searchable.contains(query)) shown.add(entry);
         }
+        int message = selectedOnly && selected.isEmpty() ? R.string.refresh_none_selected : R.string.refresh_no_match;
+        empty.setText(loading ? R.string.refresh_loading : message);
         adapter.notifyDataSetChanged();
+        if (resetScroll) list.setSelection(0);
     }
 
-    private void updateCount() { count.setText("已选 " + selected.size()); }
-    private int dp(int n) { return Math.round(getResources().getDisplayMetrics().density * n); }
+    private void updateCount() {
+        selectedTab.setText(getString(R.string.refresh_selected_count, selected.size()));
+    }
 
     @Override protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         state.putString("query", search.getText().toString());
-    }
-
-    private static final class Entry {
-        final String label, pkg, searchable;
-        Entry(String label, String pkg) {
-            this.label = label;
-            this.pkg = pkg;
-            searchable = (label + "\n" + pkg).toLowerCase(Locale.ROOT);
+        state.putBoolean("selectedOnly", selectedOnly);
+        int first = list.getFirstVisiblePosition();
+        if (list.getChildCount() > 0 && first >= 0 && first < shown.size()) {
+            state.putString("anchor", shown.get(first).pkg);
+            state.putInt("offset", list.getChildAt(0).getTop() - list.getListPaddingTop());
         }
     }
 
-    private final class AppsAdapter extends BaseAdapter {
-        @Override public int getCount() { return shown.size(); }
-        @Override public Entry getItem(int position) { return shown.get(position); }
-        @Override public long getItemId(int position) { return position; }
-        @Override public View getView(int position, View recycled, ViewGroup parent) {
-            CheckedTextView row = recycled == null ? (CheckedTextView) getLayoutInflater()
-                .inflate(android.R.layout.simple_list_item_multiple_choice, parent, false) : (CheckedTextView) recycled;
-            Entry entry = getItem(position);
-            row.setSingleLine(false);
-            row.setMinHeight(dp(60));
-            row.setTextSize(16);
-            SpannableString text = new SpannableString(entry.label + "\n" + entry.pkg);
-            text.setSpan(new RelativeSizeSpan(0.8f), entry.label.length() + 1, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            row.setText(text);
-            row.setChecked(selected.contains(entry.pkg));
-            return row;
-        }
+    @Override protected void onDestroy() {
+        workers.shutdownNow();
+        super.onDestroy();
     }
 }
